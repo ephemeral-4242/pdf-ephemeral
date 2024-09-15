@@ -1,0 +1,12 @@
+{
+  "name": "pdf-ephemeral",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "yarn workspace backend start:dev",
+    "dev:frontend": "yarn workspace frontend dev",
+    "dev": "yarn dev:backend & yarn dev:frontend"
+  }
+}
