@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const PdfChat = () => {
   const [question, setQuestion] = useState('');
@@ -8,6 +9,8 @@ const PdfChat = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim()) return;
+
+    toast.success('Test toast'); // Add this line to test toast functionality
 
     setIsLoading(true);
     try {
@@ -33,7 +36,7 @@ const PdfChat = () => {
       }
     } catch (error) {
       console.error('Error chatting with PDF:', error);
-      setAnswer(`An error occurred: ${error.message}. Please try again.`);
+      toast.error(`An error occurred: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
