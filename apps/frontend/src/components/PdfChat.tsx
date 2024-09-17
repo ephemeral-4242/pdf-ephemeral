@@ -10,8 +10,6 @@ const PdfChat = () => {
     e.preventDefault();
     if (!question.trim()) return;
 
-    toast.success('Test toast'); // Add this line to test toast functionality
-
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:4000/pdf/chat', {
@@ -26,14 +24,9 @@ const PdfChat = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      if (typeof data === 'string') {
-        setAnswer(data);
-      } else if (data && typeof data.answer === 'string') {
-        setAnswer(data.answer);
-      } else {
-        throw new Error('Unexpected response format');
-      }
+      const responseText = await response.text();
+
+      setAnswer(responseText);
     } catch (error) {
       console.error('Error chatting with PDF:', error);
       toast.error(`An error occurred: ${(error as Error).message}`);
