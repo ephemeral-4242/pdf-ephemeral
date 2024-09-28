@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Post,
   UploadedFile,
@@ -15,15 +14,12 @@ export class PdfController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadPdf(@UploadedFile() file: Express.Multer.File) {
-    const text = await this.pdfService.extractText(file.buffer);
-    return {
-      message: 'PDF uploaded and processed successfully',
-      textLength: text.length,
-    };
-  }
+    await this.pdfService.extractText(file.buffer);
+    const analysis = await this.pdfService.analyzeContract();
 
-  @Post('chat')
-  async chatWithPdf(@Body() body: { question: string }) {
-    return this.pdfService.generateResponse(body.question);
+    return {
+      message: 'PDF uploaded and analyzed successfully',
+      analysis,
+    };
   }
 }

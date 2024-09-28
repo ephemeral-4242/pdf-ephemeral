@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { uploadPdf } from '../api/pdf';
 
 const PdfUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -19,77 +21,113 @@ const PdfUpload = () => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:4000/pdf/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await response.json();
-      console.log(data);
-      // You might want to add some success feedback here
+      const result = await uploadPdf(formData);
+      setAnalysisResult(result.analysis);
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      // You might want to add some error feedback here
     } finally {
       setIsUploading(false);
     }
   };
 
+  const renderAnalysisSection = (title: string, content: any) => {
+    if (!content) return null;
+
+    if (typeof content === 'string') {
+      return (
+        <div>
+          <h3 className='text-lg font-medium'>{title}</h3>
+          <p className='bg-gray-100 p-4 rounded-md'>{content}</p>
+        </div>
+      );
+    }
+
+    if (Array.isArray(content)) {
+      return (
+        <div>
+          <h3 className='text-lg font-medium'>{title}</h3>
+          <ul className='list-disc list-inside bg-gray-100 p-4 rounded-md'>
+            {content.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    if (typeof content === 'object') {
+      return (
+        <div>
+          <h3 className='text-lg font-medium'>{title}</h3>
+          <pre className='bg-gray-100 p-4 rounded-md overflow-auto'>
+            {JSON.stringify(content, null, 2)}
+          </pre>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
-    <form onSubmit={handleSubmit} className='space-y-4'>
-      <div className='flex items-center justify-center w-full'>
-        <label
-          htmlFor='dropzone-file'
-          className='flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100'
-        >
-          <div className='flex flex-col items-center justify-center pt-5 pb-6'>
-            <svg
-              className='w-10 h-10 mb-3 text-gray-400'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-              xmlns='http://www.w3.org/2000/svg'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
-              ></path>
-            </svg>
-            <p className='mb-2 text-sm text-gray-500'>
-              <span className='font-semibold'>Click to upload</span> or drag and
-              drop
-            </p>
-            <p className='text-xs text-gray-500'>PDF (MAX. 10MB)</p>
-          </div>
+    <div className='space-y-6'>
+      <form onSubmit={handleSubmit} className='space-y-4'>
+        <div>
+          <label
+            htmlFor='pdf-upload'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Upload PDF Contract
+          </label>
           <input
-            id='dropzone-file'
+            id='pdf-upload'
             type='file'
             accept='.pdf'
             onChange={handleFileChange}
-            className='hidden'
+            className='mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100'
           />
-        </label>
-      </div>
-      {file && (
-        <p className='text-sm text-gray-500 text-center'>
-          Selected file: {file.name}
-        </p>
-      )}
-      <div className='flex justify-center'>
+        </div>
         <button
           type='submit'
-          disabled={!file || isUploading}
-          className={`px-4 py-2 text-white rounded-md transition-colors ${
-            !file || isUploading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
+          disabled={isUploading || !file}
+          className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400'
         >
-          {isUploading ? 'Uploading...' : 'Upload PDF'}
+          {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
         </button>
-      </div>
-    </form>
+      </form>
+
+      {analysisResult && (
+        <div className='space-y-4'>
+          <h2 className='text-xl font-semibold'>Contract Analysis</h2>
+          {renderAnalysisSection('Summary', analysisResult.summary)}
+          {renderAnalysisSection(
+            'Key Data Points',
+            analysisResult.keyDataPoints
+          )}
+          {renderAnalysisSection(
+            'Potential Risks',
+            analysisResult.potentialRisks
+          )}
+          {renderAnalysisSection(
+            'Suggestions for Improvement',
+            analysisResult.suggestions
+          )}
+          {analysisResult.rawResponse && (
+            <div>
+              <h3 className='text-lg font-medium'>Raw Response</h3>
+              <pre className='bg-gray-100 p-4 rounded-md overflow-auto'>
+                {analysisResult.rawResponse}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

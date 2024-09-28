@@ -7,12 +7,12 @@ export function uploadPdf(formData: FormData) {
   });
 }
 
-export function chatWithPdf(question: string) {
-  return fetchApi('/pdf/chat', {
+export function compareWithTemplate(data: { templateText: string }) {
+  return fetchApi('/pdf/compare', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify(data),
   });
 }
