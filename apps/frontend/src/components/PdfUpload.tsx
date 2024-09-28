@@ -70,63 +70,62 @@ const PdfUpload = () => {
   };
 
   return (
-    <div className='space-y-6'>
-      <form onSubmit={handleSubmit} className='space-y-4'>
-        <div>
-          <label
-            htmlFor='pdf-upload'
-            className='block text-sm font-medium text-gray-700'
-          >
-            Upload PDF Contract
-          </label>
-          <input
-            id='pdf-upload'
-            type='file'
-            accept='.pdf'
-            onChange={handleFileChange}
-            className='mt-1 block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100'
-          />
-        </div>
-        <button
-          type='submit'
-          disabled={isUploading || !file}
-          className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400'
-        >
-          {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
-        </button>
-      </form>
+    <div className='flex items-center justify-center h-96 bg-gray-100 rounded-lg'>
+      <div className='bg-white rounded-lg shadow-lg p-8 w-full max-w-lg'>
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          <div className='text-center'>
+            <label
+              htmlFor='pdf-upload'
+              className='block text-sm font-medium text-gray-700'
+            >
+              Drag and drop your PDF contracts here
+            </label>
+            <input
+              id='pdf-upload'
+              type='file'
+              accept='.pdf'
+              onChange={handleFileChange}
+              className='mt-4 block w-full px-6 py-4 border-2 border-dashed border-red-600 text-center text-red-600 rounded-md cursor-pointer hover:bg-red-50'
+            />
+          </div>
+          <div className='text-center'>
+            <button
+              type='submit'
+              disabled={isUploading || !file}
+              className='w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400'
+            >
+              {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
+            </button>
+          </div>
+        </form>
 
-      {analysisResult && (
-        <div className='space-y-4'>
-          <h2 className='text-xl font-semibold'>Contract Analysis</h2>
-          {renderAnalysisSection('Summary', analysisResult.summary)}
-          {renderAnalysisSection(
-            'Key Data Points',
-            analysisResult.keyDataPoints
-          )}
-          {renderAnalysisSection(
-            'Potential Risks',
-            analysisResult.potentialRisks
-          )}
-          {renderAnalysisSection(
-            'Suggestions for Improvement',
-            analysisResult.suggestions
-          )}
-          {analysisResult.rawResponse && (
-            <div>
-              <h3 className='text-lg font-medium'>Raw Response</h3>
-              <pre className='bg-gray-100 p-4 rounded-md overflow-auto'>
-                {analysisResult.rawResponse}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
+        {analysisResult && (
+          <div className='space-y-4 mt-6'>
+            <h2 className='text-xl font-semibold'>Contract Analysis</h2>
+            {renderAnalysisSection('Summary', analysisResult.summary)}
+            {renderAnalysisSection(
+              'Key Data Points',
+              analysisResult.keyDataPoints
+            )}
+            {renderAnalysisSection(
+              'Potential Risks',
+              analysisResult.potentialRisks
+            )}
+            {renderAnalysisSection(
+              'Suggestions for Improvement',
+              analysisResult.suggestions
+            )}
+            {analysisResult.rawResponse && (
+              <div>
+                <h3 className='text-lg font-medium'>Raw Response</h3>
+                <pre className='bg-gray-100 p-4 rounded-md overflow-auto'>
+                  {analysisResult.rawResponse}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

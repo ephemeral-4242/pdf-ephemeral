@@ -29,19 +29,42 @@ export default function Home() {
     );
 
   return (
-    <main className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-4xl mx-auto'>
-        <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8 sm:mb-12'>
+    <main className='min-h-screen bg-white'>
+      {/* Top navigation bar */}
+      <header className='flex justify-between items-center py-4 bg-red-600 text-white px-6'>
+        <h1 className='text-xl font-bold'>ContractEx</h1>
+        <nav className='flex space-x-4'>
+          <a href='#' className='hover:underline'>
+            Dashboard
+          </a>
+          <a href='#' className='hover:underline'>
+            Upload Contracts
+          </a>
+          <a href='#' className='hover:underline'>
+            Results Summary
+          </a>
+        </nav>
+      </header>
+
+      {/* Page content */}
+      <div className='max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+        <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8'>
           PDF Chat Application
         </h1>
         <p className='text-xl text-center text-gray-600 mb-12'>
           {data?.message}
         </p>
+
         <div className='bg-white shadow-xl rounded-lg overflow-hidden'>
+          {/* Drag and Drop PDF Upload */}
           <div className='p-6 sm:p-8'>
             <PdfUpload />
           </div>
+
+          {/* Horizontal Divider */}
           <div className='border-t border-gray-200'></div>
+
+          {/* PDF Chat */}
           <div className='p-6 sm:p-8'>
             <PdfChat />
           </div>
