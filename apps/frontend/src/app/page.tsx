@@ -49,11 +49,8 @@ export default function Home() {
       {/* Page content */}
       <div className='max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
         <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8'>
-          PDF Chat Application
+          Contract Analysis
         </h1>
-        <p className='text-xl text-center text-gray-600 mb-12'>
-          {data?.message}
-        </p>
 
         <div className='bg-white shadow-xl rounded-lg overflow-hidden'>
           {/* Drag and Drop PDF Upload */}
@@ -63,11 +60,6 @@ export default function Home() {
 
           {/* Horizontal Divider */}
           <div className='border-t border-gray-200'></div>
-
-          {/* PDF Chat */}
-          <div className='p-6 sm:p-8'>
-            <PdfChat />
-          </div>
         </div>
       </div>
     </main>

@@ -9,9 +9,19 @@ export class PdfService {
   private pdfText: string;
 
   async extractText(buffer: Buffer): Promise<string> {
-    const data = await pdf(buffer);
-    this.pdfText = data.text;
-    return this.pdfText;
+    try {
+      const data = await pdf(buffer);
+      this.pdfText = data.text;
+      return this.pdfText;
+    } catch (error) {
+      this.logger.error(`Error extracting PDF text: ${error.message}`);
+      if (error.message.includes('bad XRef entry')) {
+        throw new Error(
+          'The PDF file appears to be corrupted or invalid. Please try uploading a different file.',
+        );
+      }
+      throw error;
+    }
   }
 
   async analyzeContract(): Promise<any> {
