@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 const PdfUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,11 +22,26 @@ const PdfUpload = () => {
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
+      // Simulating upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prevProgress) => {
+          if (prevProgress >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prevProgress + 10;
+        });
+      }, 500);
+
       const result = await uploadPdf(formData);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
       router.push(
         `/analysis-results?analysisResult=${encodeURIComponent(JSON.stringify(result.analysis))}`
       );
@@ -65,6 +81,30 @@ const PdfUpload = () => {
               {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
             </button>
           </div>
+          {isUploading && (
+            <div className='mt-4'>
+              <div className='relative pt-1'>
+                <div className='flex mb-2 items-center justify-between'>
+                  <div>
+                    <span className='text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-200'>
+                      {uploadProgress < 100 ? 'Uploading' : 'Processing'}
+                    </span>
+                  </div>
+                  <div className='text-right'>
+                    <span className='text-xs font-semibold inline-block text-red-600'>
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                </div>
+                <div className='overflow-hidden h-2 mb-4 text-xs flex rounded bg-red-200'>
+                  <div
+                    style={{ width: `${uploadProgress}%` }}
+                    className='shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500 transition-all duration-500 ease-out'
+                  ></div>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
