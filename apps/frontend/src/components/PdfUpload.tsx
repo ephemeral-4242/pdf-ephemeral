@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { uploadPdf } from '../api/pdf';
-import { useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
@@ -8,7 +7,7 @@ import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 const PdfUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const router = useRouter();
+  const [analysisResult, setAnalysisResult] = useState('');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFile(acceptedFiles[0]);
@@ -25,14 +24,14 @@ const PdfUpload = () => {
     if (!file) return;
 
     setIsUploading(true);
+    setAnalysisResult('');
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const result = await uploadPdf(formData);
-      router.push(
-        `/analysis-results?analysisResult=${encodeURIComponent(JSON.stringify(result.analysis))}`
-      );
+      await uploadPdf(formData, (chunk: string) => {
+        setAnalysisResult((prev) => prev + chunk);
+      });
     } catch (error) {
       console.error('Error uploading PDF:', error);
       // Consider adding a toast notification here for the error
@@ -42,7 +41,7 @@ const PdfUpload = () => {
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+    <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100'>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -104,6 +103,17 @@ const PdfUpload = () => {
           </motion.button>
         </form>
       </motion.div>
+
+      {analysisResult && (
+        <div className='bg-white shadow-lg rounded-lg p-6 mt-6 w-full max-w-3xl'>
+          <h2 className='text-2xl font-semibold text-gray-800 mb-4'>
+            Analysis Result
+          </h2>
+          <pre className='bg-gray-100 p-4 rounded-md overflow-auto text-sm text-gray-700 whitespace-pre-wrap'>
+            {analysisResult}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };

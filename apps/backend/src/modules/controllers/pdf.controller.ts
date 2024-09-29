@@ -3,9 +3,11 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
+import { Response } from 'express';
 
 @Controller('pdf')
 export class PdfController {
@@ -13,13 +15,11 @@ export class PdfController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadPdf(@UploadedFile() file: Express.Multer.File) {
+  async uploadPdf(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
     await this.pdfService.extractText(file.buffer);
-    const analysis = await this.pdfService.analyzeContract();
-
-    return {
-      message: 'PDF uploaded and analyzed successfully',
-      analysis,
-    };
+    await this.pdfService.analyzeContractStream(res);
   }
 }
