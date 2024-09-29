@@ -4,6 +4,8 @@ import {
   UploadedFile,
   UseInterceptors,
   Res,
+  Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
@@ -19,7 +21,23 @@ export class PdfController {
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response,
   ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
     await this.pdfService.extractText(file.buffer);
-    await this.pdfService.analyzeContractStream(res);
+
+    // Reset the conversation when a new PDF is uploaded
+    this.pdfService.resetConversation();
+
+    res.status(200).json({ message: 'PDF uploaded and text extracted.' });
+  }
+
+  @Post('chat')
+  async chatWithPdf(@Body('question') question: string, @Res() res: Response) {
+    if (!question) {
+      throw new BadRequestException('Question is required');
+    }
+    await this.pdfService.chatWithPdfStream(question, res);
   }
 }
