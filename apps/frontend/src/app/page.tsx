@@ -1,18 +1,33 @@
+// apps/frontend/src/app/page.tsx
+
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import PdfUpload from '../components/PdfUpload';
 import PdfChat from '../components/PdfChat';
 
+// Dynamically import Document and Page components
+const Document = dynamic(
+  () => import('react-pdf').then((mod) => mod.Document),
+  { ssr: false }
+);
+const Page = dynamic(() => import('react-pdf').then((mod) => mod.Page), {
+  ssr: false,
+});
+
 export default function Home() {
   const [isPdfUploaded, setIsPdfUploaded] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (url: string) => {
     setIsPdfUploaded(true);
+    setPdfUrl(url);
   };
 
   const handleReset = () => {
     setIsPdfUploaded(false);
+    setPdfUrl(null);
   };
 
   return (
@@ -30,7 +45,18 @@ export default function Home() {
         {!isPdfUploaded ? (
           <PdfUpload onUploadSuccess={handleUploadSuccess} />
         ) : (
-          <PdfChat />
+          <div className='flex flex-col space-y-6'>
+            <div className='h-[600px] border border-gray-300 overflow-auto'>
+              {pdfUrl && (
+                <Document file={pdfUrl}>
+                  {/* Render all pages */}
+                  <Page pageNumber={1} />
+                  {/* Add logic to render more pages if needed */}
+                </Document>
+              )}
+            </div>
+            <PdfChat />
+          </div>
         )}
       </div>
     </main>
