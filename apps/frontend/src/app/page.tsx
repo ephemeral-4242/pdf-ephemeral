@@ -31,17 +31,17 @@ export default function Home() {
   return (
     <main className='min-h-screen bg-white'>
       {/* Top navigation bar */}
-      <header className='flex justify-between items-center py-4 bg-red-600 text-white px-6'>
-        <h1 className='text-xl font-bold'>ContractEx</h1>
+      <header className='flex justify-between items-center py-4 bg-green-600 text-white px-6'>
+        <h1 className='text-xl font-bold'>RealEstate Contract Analyzer</h1>
         <nav className='flex space-x-4'>
           <a href='#' className='hover:underline'>
-            Dashboard
+            Home
           </a>
           <a href='#' className='hover:underline'>
-            Upload Contracts
+            Upload Contract
           </a>
           <a href='#' className='hover:underline'>
-            Results Summary
+            Analysis History
           </a>
         </nav>
       </header>
@@ -49,7 +49,7 @@ export default function Home() {
       {/* Page content */}
       <div className='max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
         <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8'>
-          Contract Analysis
+          Real Estate Contract Analysis
         </h1>
 
         <div className='bg-white shadow-xl rounded-lg overflow-hidden'>
