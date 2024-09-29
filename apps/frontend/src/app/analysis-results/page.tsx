@@ -16,7 +16,7 @@ export default function AnalysisResultsPage() {
       <h1 className='text-4xl font-extrabold text-center text-gray-900 mb-8'>
         Analysis Results
       </h1>
-      <AnalysisResult analysisResult={JSON.parse(analysisResult)} />
+      <AnalysisResult analysisResult={analysisResult} />
     </div>
   );
 }

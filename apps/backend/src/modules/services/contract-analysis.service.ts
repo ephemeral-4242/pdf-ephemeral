@@ -21,10 +21,13 @@ export class ContractAnalysisService {
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
-        { role: 'system', content: 'You are a contract analysis assistant.' },
+        {
+          role: 'system',
+          content: 'You are a real estate contract analysis assistant.',
+        },
         {
           role: 'user',
-          content: `Analyze the following contract and identify key terms, clauses, and potential risks:\n\n${text}`,
+          content: `Please analyze the following real estate contract. Extract key information such as property details, parties involved, financial terms, dates, contingencies, and any potential risks or unusual clauses. Provide the analysis in bullet points:\n\n${text}`,
         },
       ],
       max_tokens: 1500,

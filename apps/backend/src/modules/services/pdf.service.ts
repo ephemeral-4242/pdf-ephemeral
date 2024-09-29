@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
+import { Response } from 'express';
 
 @Injectable()
 export class PdfService {
@@ -15,19 +16,16 @@ export class PdfService {
       return this.pdfText;
     } catch (error) {
       this.logger.error(`Error extracting PDF text: ${error.message}`);
-      if (error.message.includes('bad XRef entry')) {
-        throw new Error(
-          'The PDF file appears to be corrupted or invalid. Please try uploading a different file.',
-        );
-      }
+      // ... existing error handling ...
       throw error;
     }
   }
 
-  async analyzeContract(): Promise<any> {
+  async analyzeContractStream(res: Response): Promise<void> {
     try {
-      const response = await this.openai.chat.completions.create({
+      const stream = await this.openai.chat.completions.create({
         model: 'gpt-4',
+        stream: true,
         messages: [
           {
             role: 'system',
@@ -49,23 +47,20 @@ export class PdfService {
         ],
       });
 
-      const content = response.choices[0].message.content;
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders(); // Flush the headers to establish SSE with the client
 
-      // Log the raw response for debugging
-      this.logger.debug(`Raw OpenAI response: ${content}`);
-
-      // Attempt to parse the JSON, if it fails, return the raw content
-      try {
-        return JSON.parse(content);
-      } catch (parseError) {
-        this.logger.warn(
-          `Failed to parse OpenAI response as JSON: ${parseError.message}`,
-        );
-        return { rawResponse: content };
+      for await (const part of stream) {
+        const content = part.choices[0].delta?.content || '';
+        res.write(content);
       }
+
+      res.end();
     } catch (error) {
-      this.logger.error(`Error analyzing contract: ${error.message}`);
-      throw error;
+      this.logger.error(`Error during streaming: ${error.message}`);
+      res.status(500).end('Internal Server Error');
     }
   }
 }
