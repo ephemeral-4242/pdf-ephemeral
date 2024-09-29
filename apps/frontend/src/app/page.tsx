@@ -7,12 +7,7 @@ import dynamic from 'next/dynamic';
 import PdfUpload from '../components/PdfUpload';
 import PdfChat from '../components/PdfChat';
 
-// Dynamically import Document and Page components
-const Document = dynamic(
-  () => import('react-pdf').then((mod) => mod.Document),
-  { ssr: false }
-);
-const Page = dynamic(() => import('react-pdf').then((mod) => mod.Page), {
+const PDFViewer = dynamic(() => import('../components/PDFViewer'), {
   ssr: false,
 });
 
@@ -46,14 +41,8 @@ export default function Home() {
           <PdfUpload onUploadSuccess={handleUploadSuccess} />
         ) : (
           <div className='flex flex-col space-y-6'>
-            <div className='h-[600px] border border-gray-300 overflow-auto'>
-              {pdfUrl && (
-                <Document file={pdfUrl}>
-                  {/* Render all pages */}
-                  <Page pageNumber={1} />
-                  {/* Add logic to render more pages if needed */}
-                </Document>
-              )}
+            <div className='h-[600px] border border-gray-300'>
+              {pdfUrl && <PDFViewer url={pdfUrl} />}
             </div>
             <PdfChat />
           </div>
