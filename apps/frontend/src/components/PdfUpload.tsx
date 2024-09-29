@@ -1,47 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { uploadPdf } from '../api/pdf';
-import AnalysisResult from './AnalysisResults';
 import { useRouter } from 'next/navigation';
+import { useDropzone } from 'react-dropzone';
+import { motion } from 'framer-motion';
+import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 
 const PdfUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   const router = useRouter();
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFile(acceptedFiles[0]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    multiple: false,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
 
     setIsUploading(true);
-    setUploadProgress(0);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      // Simulating upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prevProgress) => {
-          if (prevProgress >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prevProgress + 10;
-        });
-      }, 500);
-
       const result = await uploadPdf(formData);
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
       router.push(
         `/analysis-results?analysisResult=${encodeURIComponent(JSON.stringify(result.analysis))}`
       );
@@ -54,61 +42,74 @@ const PdfUpload = () => {
   };
 
   return (
-    <div className='flex items-center justify-center h-96 bg-gray-100 rounded-lg'>
-      <div className='bg-white rounded-lg shadow-lg p-8 w-full max-w-lg'>
+    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className='bg-white rounded-lg shadow-xl p-8 w-full max-w-md'
+      >
         <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='text-center'>
-            <label
-              htmlFor='pdf-upload'
-              className='block text-sm font-medium text-gray-700'
-            >
-              Drag and drop your PDF contracts here
-            </label>
-            <input
-              id='pdf-upload'
-              type='file'
-              accept='.pdf'
-              onChange={handleFileChange}
-              className='mt-4 block w-full px-6 py-4 border-2 border-dashed border-red-600 text-center text-red-600 rounded-md cursor-pointer hover:bg-red-50'
-            />
-          </div>
-          <div className='text-center'>
-            <button
-              type='submit'
-              disabled={isUploading || !file}
-              className='w-full py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400'
-            >
-              {isUploading ? 'Analyzing...' : 'Upload and Analyze'}
-            </button>
-          </div>
-          {isUploading && (
-            <div className='mt-4'>
-              <div className='relative pt-1'>
-                <div className='flex mb-2 items-center justify-between'>
-                  <div>
-                    <span className='text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-200'>
-                      {uploadProgress < 100 ? 'Uploading' : 'Processing'}
-                    </span>
-                  </div>
-                  <div className='text-right'>
-                    <span className='text-xs font-semibold inline-block text-red-600'>
-                      {uploadProgress}%
-                    </span>
-                  </div>
-                </div>
-                <div className='overflow-hidden h-2 mb-4 text-xs flex rounded bg-red-200'>
-                  <div
-                    style={{ width: `${uploadProgress}%` }}
-                    className='shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500 transition-all duration-500 ease-out'
-                  ></div>
-                </div>
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-200 ease-in-out ${
+              isDragActive
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <input {...getInputProps()} />
+            {file ? (
+              <div className='flex items-center justify-center space-x-2'>
+                <FiFile className='text-blue-500 text-2xl' />
+                <span className='text-sm text-gray-600'>{file.name}</span>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFile(null);
+                  }}
+                  className='text-red-500 hover:text-red-700'
+                >
+                  <FiX />
+                </button>
               </div>
-            </div>
-          )}
+            ) : (
+              <div>
+                <FiUploadCloud className='mx-auto text-4xl text-gray-400 mb-2' />
+                <p className='text-sm text-gray-600'>
+                  Drag and drop your PDF here, or click to select
+                </p>
+              </div>
+            )}
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type='submit'
+            disabled={isUploading || !file}
+            className='w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 ease-in-out flex items-center justify-center space-x-2'
+          >
+            {isUploading ? (
+              <>
+                <Spinner />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <FiUploadCloud />
+                <span>Upload and Analyze</span>
+              </>
+            )}
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
+
+const Spinner = () => (
+  <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white'></div>
+);
 
 export default PdfUpload;
