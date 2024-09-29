@@ -9,6 +9,12 @@ export class PdfService {
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   private pdfText: string;
 
+  // New: Store the conversation messages
+  private conversation: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }> = [];
+
   async extractText(buffer: Buffer): Promise<string> {
     try {
       const data = await pdf(buffer);
@@ -16,48 +22,53 @@ export class PdfService {
       return this.pdfText;
     } catch (error) {
       this.logger.error(`Error extracting PDF text: ${error.message}`);
-      // ... existing error handling ...
       throw error;
     }
   }
 
-  async analyzeContractStream(res: Response): Promise<void> {
+  // New: Reset conversation when a new PDF is uploaded
+  resetConversation() {
+    this.conversation = [
+      {
+        role: 'system',
+        content:
+          'You are an AI assistant that answers questions based on the provided PDF content.',
+      },
+      {
+        role: 'user',
+        content: `Here is the content of the PDF document:\n\n${this.pdfText}`,
+      },
+    ];
+  }
+
+  async chatWithPdfStream(question: string, res: Response): Promise<void> {
     try {
+      // Add user's question to the conversation
+      this.conversation.push({ role: 'user', content: question });
+
       const stream = await this.openai.chat.completions.create({
         model: 'gpt-4',
         stream: true,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an AI assistant that analyzes contracts. Always respond in valid JSON format.',
-          },
-          {
-            role: 'user',
-            content: `Analyze the following contract and provide:
-            1. A summary of the main points (max 3 sentences)
-            2. Key data points (parties, dates, monetary values)
-            3. Potential risks or unclear clauses
-            4. Suggestions for improvement
-
-            Respond in JSON format.
-
-            Contract text: ${this.pdfText}`,
-          },
-        ],
+        messages: this.conversation,
       });
 
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      res.flushHeaders(); // Flush the headers to establish SSE with the client
+      res.flushHeaders();
+
+      let assistantReply = '';
 
       for await (const part of stream) {
         const content = part.choices[0].delta?.content || '';
+        assistantReply += content;
         res.write(content);
       }
 
       res.end();
+
+      // Add assistant's reply to the conversation
+      this.conversation.push({ role: 'assistant', content: assistantReply });
     } catch (error) {
       this.logger.error(`Error during streaming: ${error.message}`);
       res.status(500).end('Internal Server Error');
