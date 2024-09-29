@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { uploadPdf } from '../api/pdf';
 import AnalysisResult from './AnalysisResults';
+import { useRouter } from 'next/navigation';
 
 const PdfUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -13,6 +14,8 @@ const PdfUpload = () => {
     }
   };
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
@@ -23,9 +26,12 @@ const PdfUpload = () => {
 
     try {
       const result = await uploadPdf(formData);
-      setAnalysisResult(result.analysis);
+      router.push(
+        `/analysis-results?analysisResult=${encodeURIComponent(JSON.stringify(result.analysis))}`
+      );
     } catch (error) {
       console.error('Error uploading PDF:', error);
+      // Consider adding a toast notification here for the error
     } finally {
       setIsUploading(false);
     }
@@ -60,8 +66,6 @@ const PdfUpload = () => {
             </button>
           </div>
         </form>
-
-        {analysisResult && <AnalysisResult analysisResult={analysisResult} />}
       </div>
     </div>
   );
