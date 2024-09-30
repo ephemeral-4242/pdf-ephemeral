@@ -13,7 +13,7 @@ export default function Home() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+    <div className='min-h-screen bg-gradient-to-br from-purple-50 to-purple-100'>
       <div className='w-full px-2 sm:px-4 py-4'>
         <div className='flex justify-between items-center mb-4'>
           <h1 className='text-2xl font-bold text-gray-900'>

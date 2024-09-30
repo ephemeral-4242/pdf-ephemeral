@@ -16,18 +16,21 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className='min-h-screen flex flex-col bg-gray-100'>
-        <nav className='bg-blue-600 text-white shadow-md'>
+        <nav className='bg-purple-600 text-white shadow-md'>
           <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
             <Link href='/' className='text-xl font-semibold'>
               My App
             </Link>
             <div className='space-x-4'>
-              <Link href='/' className='hover:text-blue-200 transition-colors'>
+              <Link
+                href='/'
+                className='hover:text-purple-200 transition-colors'
+              >
                 Home
               </Link>
               <Link
                 href='/pdfs'
-                className='hover:text-blue-200 transition-colors'
+                className='hover:text-purple-200 transition-colors'
               >
                 View PDFs
               </Link>
@@ -37,7 +40,7 @@ export default function RootLayout({
         <main className='flex-grow container mx-auto px-4 py-8'>
           {children}
         </main>
-        <footer className='bg-gray-200 text-gray-600 py-4'>
+        <footer className='bg-purple-200 text-purple-600 py-4'>
           <div className='container mx-auto px-4 text-center'>
             © 2024 My App. All rights reserved.
           </div>
