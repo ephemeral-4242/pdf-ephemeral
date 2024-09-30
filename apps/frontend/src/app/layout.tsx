@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
-      <body className='min-h-screen flex flex-col bg-gray-100'>
+    <html lang='en' className='h-full'>
+      <body className='min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-purple-100'>
         <nav className='bg-purple-600 text-white shadow-md'>
           <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
             <Link href='/' className='text-xl font-semibold'>
