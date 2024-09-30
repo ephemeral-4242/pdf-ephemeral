@@ -79,40 +79,76 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   };
 
   return (
-    <div className='space-y-6'>
-      <form onSubmit={handleSubmit} className='flex space-x-2'>
-        <input
-          type='text'
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder='Ask a question about the PDF'
-          className='flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-        />
-        <button
-          type='submit'
-          disabled={isLoading || !question.trim()}
-          className={`px-4 py-2 text-white rounded-md transition-colors ${
-            isLoading || !question.trim()
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
-        >
-          {isLoading ? 'Asking...' : 'Ask'}
-        </button>
-      </form>
+    <div className='max-w-3xl mx-auto p-4 flex flex-col h-screen'>
+      <div className='flex-grow space-y-4 overflow-y-auto pr-2'>
+        {messages.length === 0 ? (
+          <div className='flex items-center justify-center h-full text-gray-500'>
+            No messages yet. Ask a question about the PDF.
+          </div>
+        ) : (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg ${
+                msg.role === 'user'
+                  ? 'bg-blue-100 ml-auto max-w-[80%]'
+                  : 'bg-gray-100 border border-gray-200 max-w-[80%]'
+              }`}
+            >
+              <p className='text-gray-800 whitespace-pre-wrap'>{msg.content}</p>
+            </div>
+          ))
+        )}
+      </div>
 
-      <div className='space-y-4'>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-4 rounded-md ${
-              msg.role === 'user' ? 'bg-blue-100 self-end' : 'bg-gray-100'
+      <form
+        onSubmit={handleSubmit}
+        className='bg-white p-4 rounded-t-lg shadow-sm'
+      >
+        <div className='flex space-x-2'>
+          <input
+            type='text'
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder='Ask a question about the PDF'
+            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+          />
+          <button
+            type='submit'
+            disabled={isLoading || !question.trim()}
+            className={`px-6 py-3 text-white font-semibold rounded-lg transition-colors ${
+              isLoading || !question.trim()
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700'
             }`}
           >
-            <p className='text-gray-700 whitespace-pre-wrap'>{msg.content}</p>
-          </div>
-        ))}
-      </div>
+            {isLoading ? (
+              <svg
+                className='animate-spin h-5 w-5 text-white'
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+              >
+                <circle
+                  className='opacity-25'
+                  cx='12'
+                  cy='12'
+                  r='10'
+                  stroke='currentColor'
+                  strokeWidth='4'
+                ></circle>
+                <path
+                  className='opacity-75'
+                  fill='currentColor'
+                  d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'
+                ></path>
+              </svg>
+            ) : (
+              'Ask'
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

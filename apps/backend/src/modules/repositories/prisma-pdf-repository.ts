@@ -12,8 +12,6 @@ export class PrismaPDFRepository implements IPDFRepository {
   constructor(private prisma: PrismaService) {}
 
   async save(file: Express.Multer.File): Promise<PDFDocument> {
-    console.log('save method called');
-
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const filename = `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`;
     const filePath = path.join('uploads', filename);
@@ -37,7 +35,6 @@ export class PrismaPDFRepository implements IPDFRepository {
       },
     });
 
-    console.log('pdfDocument', pdfDocument);
     return pdfDocument;
   }
 

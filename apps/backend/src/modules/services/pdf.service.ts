@@ -8,6 +8,12 @@ import {
 } from '../repositories/pdf-repository.interface';
 import { PDFDocument } from '../repositories/pdf-document.interface';
 
+import { generateEmbedding } from '../../utils/embedding';
+import { upsertPoints } from '../services/qdrant-service';
+import { splitTextIntoChunks } from 'src/utils/text-utils';
+import { v4 as uuidv4 } from 'uuid';
+import { createCollection } from '../services/qdrant-service';
+
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
@@ -26,25 +32,57 @@ export class PdfService {
       const pdfDocument = await this.pdfRepository.save(file);
       this.pdfText = pdfDocument.content;
       this.resetConversation();
+
+      // Ensure the collection exists
+      await createCollection('pdf_collection');
+
+      // Split the text into larger chunks
+      const chunks = splitTextIntoChunks(this.pdfText, 2000); // Adjust chunk size as needed
+
+      console.log('chunks', chunks.length);
+
+      // Generate embeddings for each chunk and store them in Qdrant
+      const points = await Promise.all(
+        chunks.map(async (chunk, index) => {
+          try {
+            const vector = await generateEmbedding(chunk);
+            return {
+              id: uuidv4(), // Generate a valid UUID for the point ID
+              vector,
+              payload: {
+                pdfId: pdfDocument.id,
+                chunkIndex: index,
+                text: chunk,
+              },
+            };
+          } catch (error) {
+            this.logger.error(
+              `Error generating embedding for chunk ${index}: ${error.message}`,
+            );
+            throw error;
+          }
+        }),
+      );
+
+      await upsertPoints('pdf_collection', points); // Ensure 'pdf_collection' exists in Qdrant
+
       return pdfDocument;
     } catch (error) {
-      this.logger.error(`Error processing and saving PDF: ${error.message}`);
+      if (error.response && error.response.status === 429) {
+        this.logger.error(
+          'OpenAI API quota exceeded. Please check your plan and billing details.',
+        );
+      } else {
+        this.logger.error(`Error processing and saving PDF: ${error.message}`);
+      }
       throw error;
     }
   }
 
-  private async extractText(buffer: Buffer): Promise<string> {
-    try {
-      const data = await pdf(buffer);
-      return data.text;
-    } catch (error) {
-      this.logger.error(`Error extracting PDF text: ${error.message}`);
-      throw error;
-    }
-  }
   async getAllPdfs(): Promise<PDFDocument[]> {
     return this.pdfRepository.getAll();
   }
+
   resetConversation() {
     this.conversation = [
       {
