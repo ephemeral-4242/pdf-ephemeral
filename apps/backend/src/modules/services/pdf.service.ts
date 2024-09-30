@@ -1,13 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
 import { Response } from 'express';
+import {
+  IPDFRepository,
+  PDF_REPOSITORY,
+} from '../repositories/pdf-repository.interface';
+import { PDFDocument } from '../repositories/pdf-document.interface';
 
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   private pdfText: string;
+
+  constructor(@Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository) {}
 
   // New: Store the conversation messages
   private conversation: Array<{
@@ -19,6 +26,15 @@ export class PdfService {
     try {
       const data = await pdf(buffer);
       this.pdfText = data.text;
+
+      const pdfDocument: PDFDocument = {
+        id: Date.now().toString(), // Generate a simple ID
+        content: this.pdfText,
+        uploadDate: new Date(),
+      };
+
+      await this.pdfRepository.save(pdfDocument);
+
       return this.pdfText;
     } catch (error) {
       this.logger.error(`Error extracting PDF text: ${error.message}`);

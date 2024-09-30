@@ -1,0 +1,10 @@
+import { PDFDocument } from './pdf-document.interface';
+
+export interface IPDFRepository {
+  save(pdfDocument: PDFDocument): Promise<void>;
+  getById(id: string): Promise<PDFDocument | null>;
+  getAll(): Promise<PDFDocument[]>;
+  delete(id: string): Promise<void>;
+}
+
+export const PDF_REPOSITORY = 'PDF_REPOSITORY';
