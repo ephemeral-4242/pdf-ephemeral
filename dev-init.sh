@@ -27,4 +27,9 @@ yarn prisma migrate reset --force
 # echo "Seeding the database..."
 # yarn prisma db seed
 
+# Launch Qdrant using Docker
+echo "Launching Qdrant..."
+docker run -d -p 6333:6333 --name qdrant qdrant/qdrant
+
 echo "Prisma setup complete!"
+echo "Qdrant is running on port 6333"
