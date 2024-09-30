@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as pdf from 'pdf-parse';
 import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class PrismaPDFRepository implements IPDFRepository {
@@ -16,6 +17,14 @@ export class PrismaPDFRepository implements IPDFRepository {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const filename = `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`;
     const filePath = path.join('uploads', filename);
+
+    // Ensure upload directory exists
+    if (!fs.existsSync('uploads')) {
+      fs.mkdirSync('uploads', { recursive: true });
+    }
+
+    // Write file to disk
+    fs.writeFileSync(filePath, file.buffer);
 
     const pdfDocument = await this.prisma.pDF.create({
       data: {
