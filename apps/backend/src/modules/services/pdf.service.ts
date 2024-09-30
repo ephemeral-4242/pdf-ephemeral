@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
 import { Response } from 'express';
@@ -59,10 +59,26 @@ export class PdfService {
     ];
   }
 
-  async chatWithPdfStream(question: string, res: Response): Promise<void> {
+  async chatWithPdfStream(
+    question: string,
+    pdfId: string,
+    res: Response,
+  ): Promise<void> {
     try {
+      // Retrieve the PDF content using the pdfId
+      const pdfDocument = await this.pdfRepository.getById(pdfId);
+      if (!pdfDocument) {
+        throw new NotFoundException(`PDF with id ${pdfId} not found`);
+      }
+
       // Add user's question to the conversation
-      this.conversation.push({ role: 'user', content: question });
+      this.conversation = [
+        {
+          role: 'system',
+          content: `You are an AI assistant answering questions about the following PDF content: ${pdfDocument.content}`,
+        },
+        { role: 'user', content: question },
+      ];
 
       const stream = await this.openai.chat.completions.create({
         model: 'gpt-4',

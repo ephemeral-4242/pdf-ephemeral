@@ -35,13 +35,13 @@ export const api = {
       }
     },
     getAll: () => fetchApi('/pdf'),
-    chat: (question: string) =>
+    chat: (question: string, pdfId: string) =>
       fetchApi('/pdf/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, pdfId }),
       }),
   },
   contractAnalysis: {
