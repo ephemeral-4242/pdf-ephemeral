@@ -1,7 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
 import { Response } from 'express';
+import {
+  IPDFRepository,
+  PDF_REPOSITORY,
+} from '../repositories/pdf-repository.interface';
+import { PDFDocument } from '../repositories/pdf-document.interface';
 
 @Injectable()
 export class PdfService {
@@ -9,24 +14,35 @@ export class PdfService {
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   private pdfText: string;
 
-  // New: Store the conversation messages
+  constructor(@Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository) {}
+
   private conversation: Array<{
     role: 'system' | 'user' | 'assistant';
     content: string;
   }> = [];
 
-  async extractText(buffer: Buffer): Promise<string> {
+  async processAndSavePdf(file: Express.Multer.File): Promise<PDFDocument> {
+    try {
+      const pdfDocument = await this.pdfRepository.save(file);
+      this.pdfText = pdfDocument.content;
+      this.resetConversation();
+      return pdfDocument;
+    } catch (error) {
+      this.logger.error(`Error processing and saving PDF: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private async extractText(buffer: Buffer): Promise<string> {
     try {
       const data = await pdf(buffer);
-      this.pdfText = data.text;
-      return this.pdfText;
+      return data.text;
     } catch (error) {
       this.logger.error(`Error extracting PDF text: ${error.message}`);
       throw error;
     }
   }
 
-  // New: Reset conversation when a new PDF is uploaded
   resetConversation() {
     this.conversation = [
       {
