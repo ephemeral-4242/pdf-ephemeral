@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PDF {
+  id             String   @id @default(uuid())
+  fileName       String
+  fileSize       Int
+  mimeType       String
+  filePath       String   // This will be replaced with cloudStorageId when we switch to S3
+  content        String   @db.Text
+  uploadDate     DateTime @default(now())
+  userId         String?
+}
