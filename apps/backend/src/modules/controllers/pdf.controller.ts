@@ -50,6 +50,23 @@ export class PdfController {
     await this.pdfService.chatWithPdfStream(question, pdfId, res);
   }
 
+  @Post('library-chat')
+  async chatWithLibrary(
+    @Body('question') question: string,
+    @Res() res: Response,
+  ) {
+    if (!question) {
+      throw new BadRequestException('Question is required');
+    }
+    try {
+      const response = await this.pdfService.chatWithLibrary(question, res);
+      res.json(response);
+    } catch (error) {
+      console.error('Error chatting with library:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
   @Get()
   async getAllPdfs() {
     const pdfs = await this.pdfService.getAllPdfs();

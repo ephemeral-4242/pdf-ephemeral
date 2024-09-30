@@ -30,13 +30,16 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     ]);
 
     try {
-      const response = await fetch('http://localhost:4000/pdf/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question: trimmedQuestion, pdfId }),
-      });
+      const response = await fetch(
+        `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ question: trimmedQuestion, pdfId }),
+        }
+      );
 
       if (!response.ok || !response.body) {
         throw new Error(`API call failed: ${response.statusText}`);

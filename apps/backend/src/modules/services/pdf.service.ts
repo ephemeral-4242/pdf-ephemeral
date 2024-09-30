@@ -13,6 +13,7 @@ import { upsertPoints } from '../services/qdrant-service';
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
 import { createCollection } from '../services/qdrant-service';
+import { queryQdrant } from '../services/qdrant-service';
 
 @Injectable()
 export class PdfService {
@@ -143,6 +144,53 @@ export class PdfService {
       this.conversation.push({ role: 'assistant', content: assistantReply });
     } catch (error) {
       this.logger.error(`Error during streaming: ${error.message}`);
+      res.status(500).end('Internal Server Error');
+    }
+  }
+
+  async chatWithLibrary(question: string, res: Response): Promise<void> {
+    try {
+      // Step 1: Vectorize the query
+      const queryVector = await generateEmbedding(question);
+
+      // Step 2: Query Qdrant with the vector
+      const retrievedContent = await queryQdrant(queryVector);
+
+      // Step 3: Stream response from LLM using the retrieved content
+      const stream = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        stream: true,
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI assistant that answers questions based on the provided PDF content.`,
+          },
+          {
+            role: 'user',
+            content: `Here is the content retrieved from the library:\n\n${retrievedContent.join(
+              '\n',
+            )}`,
+          },
+          { role: 'user', content: question },
+        ],
+      });
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      let assistantReply = '';
+
+      for await (const part of stream) {
+        const content = part.choices[0].delta?.content || '';
+        assistantReply += content;
+        res.write(content);
+      }
+
+      res.end();
+    } catch (error) {
+      console.error('Error in chatWithLibrary:', error);
       res.status(500).end('Internal Server Error');
     }
   }

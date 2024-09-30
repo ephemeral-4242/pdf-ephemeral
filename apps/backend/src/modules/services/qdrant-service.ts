@@ -62,3 +62,13 @@ export const searchPoints = async (
     console.error('Error searching points:', error);
   }
 };
+
+export const queryQdrant = async (vector: number[]): Promise<string[]> => {
+  try {
+    const searchResults = await searchPoints('pdf_collection', vector);
+    return searchResults.map((result: any) => result.payload.text);
+  } catch (error) {
+    console.error('Error querying Qdrant:', error);
+    throw new Error('Failed to query Qdrant');
+  }
+};
