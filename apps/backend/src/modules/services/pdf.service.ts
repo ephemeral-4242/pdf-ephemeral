@@ -42,7 +42,9 @@ export class PdfService {
       throw error;
     }
   }
-
+  async getAllPdfs(): Promise<PDFDocument[]> {
+    return this.pdfRepository.getAll();
+  }
   resetConversation() {
     this.conversation = [
       {

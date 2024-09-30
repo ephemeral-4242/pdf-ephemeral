@@ -34,6 +34,7 @@ export const api = {
         throw new Error('Invalid JSON response from server');
       }
     },
+    getAll: () => fetchApi('/pdf'),
     chat: (question: string) =>
       fetchApi('/pdf/chat', {
         method: 'POST',
