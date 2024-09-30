@@ -1,18 +1,28 @@
+// apps/frontend/src/app/page.tsx
+
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import PdfUpload from '../components/PdfUpload';
 import PdfChat from '../components/PdfChat';
 
+const PDFViewer = dynamic(() => import('../components/PDFViewer'), {
+  ssr: false,
+});
+
 export default function Home() {
   const [isPdfUploaded, setIsPdfUploaded] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (url: string) => {
     setIsPdfUploaded(true);
+    setPdfUrl(url);
   };
 
   const handleReset = () => {
     setIsPdfUploaded(false);
+    setPdfUrl(null);
   };
 
   return (
@@ -30,7 +40,12 @@ export default function Home() {
         {!isPdfUploaded ? (
           <PdfUpload onUploadSuccess={handleUploadSuccess} />
         ) : (
-          <PdfChat />
+          <div className='flex flex-col space-y-6'>
+            <div className='h-[600px] border border-gray-300'>
+              {pdfUrl && <PDFViewer url={pdfUrl} />}
+            </div>
+            <PdfChat />
+          </div>
         )}
       </div>
     </main>

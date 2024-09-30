@@ -3,7 +3,12 @@ import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const PdfUpload = ({ onUploadSuccess }: { onUploadSuccess: () => void }) => {
+// Update the prop type to accept a function that takes a string parameter
+const PdfUpload = ({
+  onUploadSuccess,
+}: {
+  onUploadSuccess: (url: string) => void;
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -35,9 +40,15 @@ const PdfUpload = ({ onUploadSuccess }: { onUploadSuccess: () => void }) => {
         throw new Error(`Upload failed: ${response.statusText}`);
       }
 
+      // Parse the response to get the URL
+      const data = await response.json();
+      if (!data.url) {
+        throw new Error('No URL returned from server');
+      }
+
       toast.success('PDF uploaded successfully');
       setFile(null);
-      onUploadSuccess(); // Notify parent component
+      onUploadSuccess(data.url); // Pass the URL to the parent component
     } catch (error) {
       console.error('Error uploading PDF:', error);
       toast.error('Error uploading PDF');
