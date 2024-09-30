@@ -42,11 +42,11 @@ export default function RootLayout({
                 <span>View PDFs</span>
               </Link>
               <Link
-                href='/chat'
+                href='/library-chat'
                 className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
               >
                 <MessageSquare className='h-5 w-5' />
-                <span>Chat with PDFs</span>
+                <span>Library Chat</span>
               </Link>
             </div>
           </div>
