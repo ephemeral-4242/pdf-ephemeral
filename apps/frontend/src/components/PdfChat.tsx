@@ -79,7 +79,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   };
 
   return (
-    <div className='max-w-3xl mx-auto p-4 bg-gray-50 rounded-lg shadow-md'>
+    <div className='max-w-3xl mx-auto p-4 '>
       <form
         onSubmit={handleSubmit}
         className='mb-6 bg-white p-4 rounded-lg shadow-sm'
@@ -129,7 +129,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
         </div>
       </form>
 
-      <div className='space-y-4 max-h-[60vh] overflow-y-auto pr-2'>
+      <div className='space-y-4  overflow-y-auto pr-2'>
         {messages.map((msg, index) => (
           <div
             key={index}
