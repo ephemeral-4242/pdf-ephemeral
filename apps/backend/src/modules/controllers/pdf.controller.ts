@@ -7,6 +7,7 @@ import {
   Body,
   BadRequestException,
   Req,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
@@ -38,10 +39,24 @@ export class PdfController {
   }
 
   @Post('chat')
-  async chatWithPdf(@Body('question') question: string, @Res() res: Response) {
-    if (!question) {
-      throw new BadRequestException('Question is required');
+  async chatWithPdf(
+    @Body('question') question: string,
+    @Body('pdfId') pdfId: string,
+    @Res() res: Response,
+  ) {
+    if (!question || !pdfId) {
+      throw new BadRequestException('Question and PDF ID are required');
     }
-    await this.pdfService.chatWithPdfStream(question, res);
+    await this.pdfService.chatWithPdfStream(question, pdfId, res);
+  }
+
+  @Get()
+  async getAllPdfs() {
+    const pdfs = await this.pdfService.getAllPdfs();
+    return pdfs.map((pdf) => ({
+      id: pdf.id,
+      name: pdf.id, // Using id as name for now
+      uploadDate: pdf.uploadDate,
+    }));
   }
 }

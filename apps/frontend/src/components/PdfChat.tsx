@@ -6,7 +6,11 @@ interface Message {
   content: string;
 }
 
-const PdfChat = () => {
+interface PdfChatProps {
+  pdfId: string;
+}
+
+const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +35,7 @@ const PdfChat = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: trimmedQuestion }),
+        body: JSON.stringify({ question: trimmedQuestion, pdfId }),
       });
 
       if (!response.ok || !response.body) {

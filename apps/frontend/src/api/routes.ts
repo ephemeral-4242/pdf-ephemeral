@@ -34,13 +34,14 @@ export const api = {
         throw new Error('Invalid JSON response from server');
       }
     },
-    chat: (question: string) =>
+    getAll: () => fetchApi('/pdf'),
+    chat: (question: string, pdfId: string) =>
       fetchApi('/pdf/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, pdfId }),
       }),
   },
   contractAnalysis: {
