@@ -4,6 +4,7 @@ import { PDFDocument } from './pdf-document.interface';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as pdf from 'pdf-parse';
+import * as path from 'path';
 
 @Injectable()
 export class PrismaPDFRepository implements IPDFRepository {
@@ -12,18 +13,22 @@ export class PrismaPDFRepository implements IPDFRepository {
   async save(file: Express.Multer.File): Promise<PDFDocument> {
     console.log('save method called');
 
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const filename = `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`;
+    const filePath = path.join('uploads', filename);
+
     const pdfDocument = await this.prisma.pDF.create({
       data: {
-        id: file.filename,
+        id: filename,
         fileName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
-        filePath: file.path,
+        filePath: filePath,
         content: await this.extractText(file.buffer),
       },
     });
 
-    console.log('pdfcouments', pdfDocument);
+    console.log('pdfDocument', pdfDocument);
     return pdfDocument;
   }
 
