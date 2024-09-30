@@ -25,15 +25,15 @@ export default function Home() {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        <div className='flex justify-between items-center mb-8'>
-          <h1 className='text-3xl font-extrabold text-gray-900'>
+      <div className='w-full px-2 sm:px-4 py-4'>
+        <div className='flex justify-between items-center mb-4'>
+          <h1 className='text-2xl font-bold text-gray-900'>
             PDF Chat Application
           </h1>
           {isPdfUploaded && (
             <button
               onClick={handleReset}
-              className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'
+              className='px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors'
             >
               Upload New PDF
             </button>
@@ -41,15 +41,15 @@ export default function Home() {
         </div>
 
         {!isPdfUploaded ? (
-          <div className='bg-white rounded-lg shadow-xl p-8'>
+          <div className='bg-white rounded-lg shadow-md p-4'>
             <PdfUpload onUploadSuccess={handleUploadSuccess} />
           </div>
         ) : (
-          <div className='flex gap-8 h-[calc(100vh-12rem)]'>
-            <div className='w-1/2 bg-white rounded-lg shadow-xl overflow-hidden'>
+          <div className='flex gap-4 h-[calc(100vh-6rem)]'>
+            <div className='w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
               {pdfUrl && <PDFViewer url={pdfUrl} />}
             </div>
-            <div className='w-1/2 bg-white rounded-lg shadow-xl overflow-hidden'>
+            <div className='w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
               <PdfChat />
             </div>
           </div>
