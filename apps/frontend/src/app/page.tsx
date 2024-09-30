@@ -24,32 +24,37 @@ export default function Home() {
   };
 
   return (
-    <main className='flex flex-col min-h-screen bg-white'>
-      <header className='flex justify-between items-center py-4 bg-blue-600 text-white px-6'>
-        <h1 className='text-xl font-bold'>PDF Chat Application</h1>
-        <nav className='flex space-x-4'>
-          <button onClick={handleReset} className='hover:underline'>
-            Upload New PDF
-          </button>
-        </nav>
-      </header>
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+        <div className='flex justify-between items-center mb-8'>
+          <h1 className='text-3xl font-extrabold text-gray-900'>
+            PDF Chat Application
+          </h1>
+          {isPdfUploaded && (
+            <button
+              onClick={handleReset}
+              className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'
+            >
+              Upload New PDF
+            </button>
+          )}
+        </div>
 
-      <div className='flex-grow flex'>
         {!isPdfUploaded ? (
-          <div className='w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+          <div className='bg-white rounded-lg shadow-xl p-8'>
             <PdfUpload onUploadSuccess={handleUploadSuccess} />
           </div>
         ) : (
-          <>
-            <div className='w-1/2 h-screen overflow-auto'>
+          <div className='flex gap-8 h-[calc(100vh-12rem)]'>
+            <div className='w-1/2 bg-white rounded-lg shadow-xl overflow-hidden'>
               {pdfUrl && <PDFViewer url={pdfUrl} />}
             </div>
-            <div className='w-1/2 h-screen overflow-auto p-6'>
+            <div className='w-1/2 bg-white rounded-lg shadow-xl overflow-hidden'>
               <PdfChat />
             </div>
-          </>
+          </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
