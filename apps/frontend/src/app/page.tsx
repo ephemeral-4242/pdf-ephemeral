@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import PdfUpload from '../components/PdfUpload';
+import { Plus, Check, Eye, Languages } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -41,73 +42,21 @@ export default function Home() {
           <h2 className='text-3xl font-semibold text-gray-800'>Features</h2>
           <ul className='mt-6 space-y-4'>
             <li className='flex items-center justify-center space-x-3'>
-              <svg
-                className='w-6 h-6 text-purple-500'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M12 4v16m8-8H4'
-                ></path>
-              </svg>
+              <Plus className='w-6 h-6 text-purple-500' />
               <span className='text-lg text-gray-700'>Easy PDF Upload</span>
             </li>
             <li className='flex items-center justify-center space-x-3'>
-              <svg
-                className='w-6 h-6 text-purple-500'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M5 13l4 4L19 7'
-                ></path>
-              </svg>
+              <Check className='w-6 h-6 text-purple-500' />
               <span className='text-lg text-gray-700'>
                 Instant Chat with PDF Content
               </span>
             </li>
             <li className='flex items-center justify-center space-x-3'>
-              <svg
-                className='w-6 h-6 text-purple-500'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M12 11c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 0c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm0 0v1m0 4h.01M12 11v1m0 4h.01M12 11v1m0 4h.01'
-                ></path>
-              </svg>
+              <Eye className='w-6 h-6 text-purple-500' />
               <span className='text-lg text-gray-700'>Secure and Private</span>
             </li>
             <li className='flex items-center justify-center space-x-3'>
-              <svg
-                className='w-6 h-6 text-purple-500'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M3 5h12M9 3v2m0 4v2m0 4v2m0 4v2m6-6h6m-6-4h6m-6-4h6'
-                ></path>
-              </svg>
+              <Languages className='w-6 h-6 text-purple-500' />
               <span className='text-lg text-gray-700'>
                 Supports Multiple Languages
               </span>
