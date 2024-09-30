@@ -22,7 +22,7 @@ export default function ChatPage() {
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
       <div className='w-full px-2 sm:px-4 py-4'>
-        <div className='flex justify-between items-center mb-4'>
+        <div className='flex justify-between items-center mb-4 bg-white p-4 rounded-lg shadow-md'>
           <h1 className='text-2xl font-bold text-gray-900'>PDF Chat</h1>
           <Link
             href='/'
@@ -32,12 +32,18 @@ export default function ChatPage() {
           </Link>
         </div>
 
-        <div className='flex gap-4 h-[calc(100vh-6rem)]'>
-          <div className='w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
-            {pdfUrl && <PDFViewer url={pdfUrl} />}
+        <div className='flex flex-col md:flex-row gap-4 h-[calc(100vh-8rem)]'>
+          <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+            {pdfUrl && (
+              <div className='h-full overflow-y-auto'>
+                <PDFViewer url={pdfUrl} />
+              </div>
+            )}
           </div>
-          <div className='w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
-            <PdfChat pdfId={params.id as string} />
+          <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+            <div className='h-full overflow-y-auto'>
+              <PdfChat pdfId={params.id as string} />
+            </div>
           </div>
         </div>
       </div>
