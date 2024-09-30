@@ -2,19 +2,39 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 
 const qdrantClient = new QdrantClient({
   url: 'http://localhost:6333', // Update this if your Qdrant instance is hosted elsewhere
+  apiKey: process.env.QDRANT_API_KEY, // Add this line if an API key is required
 });
 
 export const createCollection = async (collectionName: string) => {
   try {
+    const collections = await qdrantClient.getCollections();
+    const collectionExists = collections.collections.some(
+      (collection) => collection.name === collectionName,
+    );
+
+    if (collectionExists) {
+      console.log(`Collection ${collectionName} already exists. Deleting...`);
+      await deleteCollection(collectionName);
+    }
+
     await qdrantClient.createCollection(collectionName, {
       vectors: {
-        size: 128, // Example vector size, update as needed
+        size: 1536, // Ensure this matches the vector size being generated
         distance: 'Cosine',
       },
     });
     console.log(`Collection ${collectionName} created successfully.`);
   } catch (error) {
     console.error('Error creating collection:', error);
+  }
+};
+
+export const deleteCollection = async (collectionName: string) => {
+  try {
+    await qdrantClient.deleteCollection(collectionName);
+    console.log(`Collection ${collectionName} deleted successfully.`);
+  } catch (error) {
+    console.error('Error deleting collection:', error);
   }
 };
 
