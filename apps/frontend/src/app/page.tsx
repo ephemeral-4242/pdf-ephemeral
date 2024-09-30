@@ -1,5 +1,3 @@
-// apps/frontend/src/app/page.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -36,16 +34,20 @@ export default function Home() {
         </nav>
       </header>
 
-      <div className='flex-grow max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='flex-grow flex'>
         {!isPdfUploaded ? (
-          <PdfUpload onUploadSuccess={handleUploadSuccess} />
+          <div className='w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+            <PdfUpload onUploadSuccess={handleUploadSuccess} />
+          </div>
         ) : (
-          <div className='flex flex-col space-y-6'>
-            <div className='h-[600px] border border-gray-300'>
+          <>
+            <div className='w-1/2 h-screen overflow-auto'>
               {pdfUrl && <PDFViewer url={pdfUrl} />}
             </div>
-            <PdfChat />
-          </div>
+            <div className='w-1/2 h-screen overflow-auto p-6'>
+              <PdfChat />
+            </div>
+          </>
         )}
       </div>
     </main>
