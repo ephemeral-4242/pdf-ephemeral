@@ -1,7 +1,7 @@
 import { PDFDocument } from './pdf-document.interface';
 
 export interface IPDFRepository {
-  save(pdfDocument: PDFDocument): Promise<void>;
+  save(file: Express.Multer.File): Promise<PDFDocument>;
   getById(id: string): Promise<PDFDocument | null>;
   getAll(): Promise<PDFDocument[]>;
   delete(id: string): Promise<void>;

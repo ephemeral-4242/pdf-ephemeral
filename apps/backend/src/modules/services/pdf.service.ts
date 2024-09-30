@@ -16,33 +16,33 @@ export class PdfService {
 
   constructor(@Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository) {}
 
-  // New: Store the conversation messages
   private conversation: Array<{
     role: 'system' | 'user' | 'assistant';
     content: string;
   }> = [];
 
-  async extractText(buffer: Buffer): Promise<string> {
+  async processAndSavePdf(file: Express.Multer.File): Promise<PDFDocument> {
+    try {
+      const pdfDocument = await this.pdfRepository.save(file);
+      this.pdfText = pdfDocument.content;
+      this.resetConversation();
+      return pdfDocument;
+    } catch (error) {
+      this.logger.error(`Error processing and saving PDF: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private async extractText(buffer: Buffer): Promise<string> {
     try {
       const data = await pdf(buffer);
-      this.pdfText = data.text;
-
-      const pdfDocument: PDFDocument = {
-        id: Date.now().toString(), // Generate a simple ID
-        content: this.pdfText,
-        uploadDate: new Date(),
-      };
-
-      await this.pdfRepository.save(pdfDocument);
-
-      return this.pdfText;
+      return data.text;
     } catch (error) {
       this.logger.error(`Error extracting PDF text: ${error.message}`);
       throw error;
     }
   }
 
-  // New: Reset conversation when a new PDF is uploaded
   resetConversation() {
     this.conversation = [
       {
