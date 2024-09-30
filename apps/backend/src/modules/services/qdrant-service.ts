@@ -13,8 +13,10 @@ export const createCollection = async (collectionName: string) => {
     );
 
     if (collectionExists) {
-      console.log(`Collection ${collectionName} already exists. Deleting...`);
-      await deleteCollection(collectionName);
+      console.log(
+        `Collection ${collectionName} already exists. Skipping creation.`,
+      );
+      return;
     }
 
     await qdrantClient.createCollection(collectionName, {

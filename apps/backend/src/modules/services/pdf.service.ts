@@ -12,8 +12,7 @@ import { generateEmbedding } from '../../utils/embedding';
 import { upsertPoints } from '../services/qdrant-service';
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
-import { createCollection } from '../services/qdrant-service';
-import { queryQdrant } from '../services/qdrant-service';
+import { createCollection, queryQdrant } from '../services/qdrant-service';
 
 @Injectable()
 export class PdfService {
@@ -89,11 +88,11 @@ export class PdfService {
       {
         role: 'system',
         content:
-          'You are an AI assistant that answers questions based on the provided PDF content.',
+          'You are an AI assistant that answers questions based on the provided content.',
       },
       {
         role: 'user',
-        content: `Here is the content of the PDF document:\n\n${this.pdfText}`,
+        content: `Here is the content:\n\n${this.pdfText}`,
       },
     ];
   }
@@ -114,7 +113,7 @@ export class PdfService {
       this.conversation = [
         {
           role: 'system',
-          content: `You are an AI assistant answering questions about the following PDF content: ${pdfDocument.content}`,
+          content: `You are an AI assistant answering questions about the following content: ${pdfDocument.content}`,
         },
         { role: 'user', content: question },
       ];
@@ -150,6 +149,7 @@ export class PdfService {
 
   async chatWithLibrary(question: string, res: Response): Promise<void> {
     try {
+      console.log('question: ', question);
       // Step 1: Vectorize the query
       const queryVector = await generateEmbedding(question);
 
@@ -163,15 +163,16 @@ export class PdfService {
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant that answers questions based on the provided PDF content.`,
+            content: `You are an AI assistant that answers questions based on the provided content. Use the provided content to answer the user's question as accurately as possible.`,
+          },
+          {
+            role: 'system',
+            content: `Content retrieved from the library:\n\n${retrievedContent.join('\n\n')}`,
           },
           {
             role: 'user',
-            content: `Here is the content retrieved from the library:\n\n${retrievedContent.join(
-              '\n',
-            )}`,
+            content: `Question: ${question}`,
           },
-          { role: 'user', content: question },
         ],
       });
 
@@ -185,6 +186,7 @@ export class PdfService {
       for await (const part of stream) {
         const content = part.choices[0].delta?.content || '';
         assistantReply += content;
+
         res.write(content);
       }
 
