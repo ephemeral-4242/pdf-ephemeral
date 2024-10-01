@@ -1,8 +1,19 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { usePdfUpload } from '../hooks/usePdfUpload';
 import { Button } from './common/Button';
+import { api } from '../api/routes';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectGroup,
+  SelectSeparator,
+} from '@/components/common/Select'; // Import the Select components
 
 const PdfUpload = ({
   onUploadSuccess,
@@ -10,6 +21,8 @@ const PdfUpload = ({
   onUploadSuccess: (url: string) => void;
 }) => {
   const [file, setFile] = useState<File | null>(null);
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { uploadPdf, isUploading, uploadProgress } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -24,11 +37,24 @@ const PdfUpload = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !selectedFolder) return;
 
-    await uploadPdf(file, onUploadSuccess);
+    await uploadPdf(file, onUploadSuccess, selectedFolder);
     setFile(null);
   };
+
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const fetchedFolders = await api.pdf.getAllFolders();
+        setFolders(fetchedFolders);
+      } catch (error) {
+        console.error('Error fetching folders:', error);
+      }
+    };
+
+    fetchFolders();
+  }, []);
 
   return (
     <div className='w-full max-w-md mx-auto'>
@@ -69,9 +95,32 @@ const PdfUpload = ({
             </div>
           )}
         </div>
+        <div>
+          <label
+            htmlFor='folder'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Select Folder
+          </label>
+          <Select onValueChange={(value) => setSelectedFolder(value)}>
+            <SelectTrigger id='folder' name='folder'>
+              <SelectValue placeholder='Select a folder' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='none' disabled>
+                Select a folder
+              </SelectItem>
+              {folders.map((folder) => (
+                <SelectItem key={folder.id} value={folder.id}>
+                  {folder.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button
           type='submit'
-          disabled={isUploading || !file}
+          disabled={isUploading || !file || !selectedFolder}
           className='w-full'
         >
           {isUploading ? (

@@ -35,6 +35,7 @@ export const api = {
       }
     },
     getAll: () => fetchApi('/pdf'),
+    getAllFolders: () => fetchApi('/pdf/folders'),
     chat: (question: string, pdfId: string) =>
       fetchApi('/pdf/chat', {
         method: 'POST',
