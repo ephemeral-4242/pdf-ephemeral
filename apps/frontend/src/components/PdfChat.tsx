@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -14,6 +14,15 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,11 +111,12 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className='bg-white p-4 rounded-t-lg shadow-sm'
+        className='bg-white p-4 rounded-t-lg shadow-sm sticky bottom-0'
       >
         <div className='flex space-x-2'>
           <input
