@@ -16,8 +16,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='h-full'>
-      <body className='min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-purple-100'>
-        <nav className='bg-purple-600 text-white shadow-md'>
+      <body className='min-h-screen flex flex-col bg-background text-foreground'>
+        <nav className='bg-gray-800 text-white shadow-md'>
           <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
             <Link
               href='/'
@@ -29,21 +29,21 @@ export default function RootLayout({
             <div className='space-x-4 flex items-center'>
               <Link
                 href='/'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
+                className='flex items-center space-x-2 hover:text-primary transition-colors'
               >
                 <Home className='h-5 w-5' />
                 <span>Home</span>
               </Link>
               <Link
                 href='/pdfs'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
+                className='flex items-center space-x-2 hover:text-primary transition-colors'
               >
                 <FileText className='h-5 w-5' />
                 <span>View PDFs</span>
               </Link>
               <Link
                 href='/library-chat'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
+                className='flex items-center space-x-2 hover:text-primary transition-colors'
               >
                 <MessageSquare className='h-5 w-5' />
                 <span>Library Chat</span>
@@ -54,7 +54,7 @@ export default function RootLayout({
         <main className='flex-grow container mx-auto px-4 py-8'>
           {children}
         </main>
-        <footer className='bg-purple-200 text-purple-600 py-4'>
+        <footer className='bg-gray-800 text-white py-4'>
           <div className='container mx-auto px-4 text-center'>
             © 2024 My App. All rights reserved.
           </div>

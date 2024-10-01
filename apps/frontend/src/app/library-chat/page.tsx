@@ -30,34 +30,34 @@ export default function LibraryChatPage() {
   }, []);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+    <div className='min-h-screen bg-background'>
       <div className='w-full px-2 sm:px-4 py-4'>
-        <div className='flex justify-between items-center mb-4 bg-white p-4 rounded-lg shadow-md'>
-          <h1 className='text-2xl font-bold text-gray-900'>Library Chat</h1>
+        <div className='flex justify-between items-center mb-4 bg-gray-800 p-4 rounded-lg shadow-md'>
+          <h1 className='text-2xl font-bold text-foreground'>Library Chat</h1>
         </div>
 
         {isLoading ? (
           <div className='flex justify-center items-center h-screen'>
-            <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500'></div>
+            <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary'></div>
           </div>
         ) : (
           <div className='flex flex-col md:flex-row gap-4 h-[calc(100vh-8rem)]'>
-            <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+            <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
               <div className='h-full overflow-y-auto p-4'>
-                <h2 className='text-xl font-semibold text-gray-800 mb-4'>
+                <h2 className='text-xl font-semibold text-foreground mb-4'>
                   Your PDFs
                 </h2>
-                <ul className='divide-y divide-gray-200'>
+                <ul className='divide-y divide-gray-700'>
                   {pdfs.map((pdf) => (
                     <li key={pdf.id} className='py-2 flex items-center'>
-                      <FileText className='h-6 w-6 text-purple-500 mr-2' />
-                      <span className='text-gray-700'>{pdf.name}</span>
+                      <FileText className='h-6 w-6 text-primary mr-2' />
+                      <span className='text-gray-300'>{pdf.name}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+            <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
               <div className='h-full '>
                 <PdfChat pdfId='library' />
               </div>
