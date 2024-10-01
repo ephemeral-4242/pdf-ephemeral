@@ -3,16 +3,30 @@
 import { useState, useEffect } from 'react';
 import PdfChat from '@/components/PdfChat';
 import { api } from '@/api/routes';
-import { FileText, Loader2, Book } from 'lucide-react';
+import {
+  FileText,
+  Loader2,
+  Book,
+  Folder as FolderIcon,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
 
 interface PDF {
   id: string;
-  name: string;
+  fileName: string;
+  folder?: {
+    id: string;
+    name: string;
+  };
 }
 
 export default function LibraryChatPage() {
   const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedFolders, setExpandedFolders] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -29,6 +43,26 @@ export default function LibraryChatPage() {
     fetchPdfs();
   }, []);
 
+  // Group PDFs by folders
+  const folders = pdfs.reduce(
+    (acc, pdf) => {
+      const folderName = pdf.folder?.name || 'Uncategorized';
+      if (!acc[folderName]) {
+        acc[folderName] = [];
+      }
+      acc[folderName].push(pdf);
+      return acc;
+    },
+    {} as { [key: string]: PDF[] }
+  );
+
+  const toggleFolder = (folderName: string) => {
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [folderName]: !prev[folderName],
+    }));
+  };
+
   return (
     <div className='flex h-screen bg-gray-900 text-white'>
       <div className='w-1/4 bg-gray-800 p-4 overflow-y-auto'>
@@ -41,18 +75,35 @@ export default function LibraryChatPage() {
           </div>
         ) : (
           <div className='space-y-2'>
-            {pdfs.map((pdf) => (
-              <div
-                key={pdf.id}
-                className='bg-gray-700 p-2 rounded-md hover:bg-gray-600 transition-colors duration-200'
-              >
-                <div className='flex items-center'>
-                  <FileText className='h-4 w-4 text-blue-400 mr-2' />
-                  <div className='flex-1 min-w-0'>
-                    <h3 className='text-sm font-medium truncate'>{pdf.name}</h3>
-                    <p className='text-xs text-gray-400'>In library</p>
-                  </div>
+            {Object.keys(folders).map((folderName) => (
+              <div key={folderName} className='mb-2'>
+                <div
+                  className='flex items-center cursor-pointer hover:text-blue-400'
+                  onClick={() => toggleFolder(folderName)}
+                >
+                  {expandedFolders[folderName] ? (
+                    <ChevronDown className='h-4 w-4 mr-1' />
+                  ) : (
+                    <ChevronRight className='h-4 w-4 mr-1' />
+                  )}
+                  <FolderIcon className='h-4 w-4 mr-2' />
+                  <span className='font-medium'>{folderName}</span>
                 </div>
+                {expandedFolders[folderName] && (
+                  <div className='ml-6 mt-2 space-y-1'>
+                    {folders[folderName].map((pdf) => (
+                      <div
+                        key={pdf.id}
+                        className='flex items-center p-1 rounded-md hover:bg-gray-700 transition-colors duration-200 cursor-pointer'
+                      >
+                        <FileText className='h-4 w-4 text-blue-400 mr-2' />
+                        <h3 className='text-sm font-medium truncate'>
+                          {pdf.fileName}
+                        </h3>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
