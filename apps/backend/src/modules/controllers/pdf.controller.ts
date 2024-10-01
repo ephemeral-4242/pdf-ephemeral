@@ -8,35 +8,43 @@ import {
   BadRequestException,
   Req,
   Get,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
 import { Request, Response } from 'express';
 import { RateLimitError } from 'openai';
+import { Logger } from '@nestjs/common';
 
 @Controller('pdf')
 export class PdfController {
+  private readonly logger = new Logger(PdfController.name);
+
   constructor(private readonly pdfService: PdfService) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadPdf(
     @UploadedFile() file: Express.Multer.File,
-    @Body('folderName') folderName: string,
+    @Body('folderId') folderId: string, // Changed from folderName to folderId
     @Res() res: Response,
     @Req() req: Request,
   ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
+    this.logger.log('File upload initiated');
 
     const pdfDocument = await this.pdfService.processAndSavePdf(
       file,
-      folderName,
+      folderId, // Changed from folderName to folderId
     );
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${pdfDocument.id}`;
+    this.logger.log('PDF processed and saved');
 
+    const fileUrl = `${req.protocol}://${req.get('host')}/${pdfDocument.filePath}`;
+    this.logger.log(`File URL generated: ${fileUrl}`);
+    this.logger.log(`File path: ${pdfDocument.filePath}`);
     res.status(200).json({
       message: 'PDF uploaded and text extracted.',
       url: fileUrl,
@@ -110,6 +118,24 @@ export class PdfController {
     } catch (error) {
       console.error('Error creating folder:', error);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  @Get(':id')
+  async getPdfById(@Req() req: Request, @Res() res: Response) {
+    const pdfId = req.params.id;
+    try {
+      const pdfDocument = await this.pdfService.getPdfById(pdfId);
+      res.status(200).json(pdfDocument);
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving PDF by id ${pdfId}: ${error.message}`,
+      );
+      if (error instanceof NotFoundException) {
+        res.status(404).json({ error: 'PDF not found' });
+      } else {
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     }
   }
 }

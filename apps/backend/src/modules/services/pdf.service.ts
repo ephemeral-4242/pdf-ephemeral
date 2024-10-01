@@ -34,15 +34,10 @@ export class PdfService {
 
   async processAndSavePdf(
     file: Express.Multer.File,
-    folderName?: string,
+    folderId?: string, // Changed from folderName to folderId
   ): Promise<PDFDocument> {
     try {
-      let folder = null;
-      if (folderName) {
-        folder = await this.pdfRepository.getOrCreateFolder(folderName);
-      }
-
-      const pdfDocument = await this.pdfRepository.save(file, folder?.id);
+      const pdfDocument = await this.pdfRepository.save(file, folderId);
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
@@ -63,7 +58,7 @@ export class PdfService {
                 pdfId: pdfDocument.id,
                 chunkIndex: index,
                 text: chunk,
-                folderId: folder?.id,
+                folderId: folderId,
               },
             };
           } catch (error) {
@@ -186,6 +181,21 @@ export class PdfService {
       return await this.pdfRepository.getOrCreateFolder(name);
     } catch (error) {
       this.logger.error(`Error creating folder: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getPdfById(pdfId: string): Promise<PDFDocument> {
+    try {
+      const pdfDocument = await this.pdfRepository.getById(pdfId);
+      if (!pdfDocument) {
+        throw new NotFoundException(`PDF with id ${pdfId} not found`);
+      }
+      return pdfDocument;
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving PDF by id ${pdfId}: ${error.message}`,
+      );
       throw error;
     }
   }

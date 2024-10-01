@@ -18,14 +18,18 @@ export default function ChatPage() {
   useEffect(() => {
     if (params.id) {
       setLoading(true);
-      // Construct the PDF URL using the id
-      const url = `http://localhost:4000/uploads/${params.id}`;
+      // Query the new endpoint to retrieve the PDF by its ID
+      const url = `http://localhost:4000/pdf/${params.id}`;
       fetch(url)
         .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to load PDF');
           }
-          setPdfUrl(url);
+          return response.json();
+        })
+        .then((data) => {
+          console.log('data', data);
+          setPdfUrl(`http://localhost:4000/${data.filePath}`);
           setError(null);
         })
         .catch((err) => setError(err.message))
