@@ -41,9 +41,17 @@ fi
 echo "Generating Prisma client..."
 yarn prisma generate
 
-# Apply migrations
-echo "Applying migrations..."
-yarn prisma migrate deploy
+# Check for schema changes and create migrations if necessary
+echo "Checking for schema changes..."
+if yarn prisma migrate dev --create-only --name "check_for_changes" 2>&1 | grep -q "No schema changes detected"; then
+    echo "No schema changes detected."
+    # Remove the temporary migration
+    rm -rf prisma/migrations/*check_for_changes*
+else
+    echo "Schema changes detected. Creating and applying migrations..."
+    # Apply the created migration
+    yarn prisma migrate dev
+fi
 
 # Seed the database (uncomment if you have a seed script)
 # echo "Seeding the database..."
@@ -89,5 +97,5 @@ else
 fi
 
 echo "Setup complete!"
-echo "Prisma is configured and migrations are applied."
+echo "Prisma is configured and migrations are up to date."
 echo "Qdrant is running on port 6333"

@@ -8,12 +8,31 @@ datasource db {
 }
 
 model PDF {
-  id             String   @id @default(uuid())
-  fileName       String
-  fileSize       Int
-  mimeType       String
-  filePath       String   // This will be replaced with cloudStorageId when we switch to S3
-  content        String   @db.Text
-  uploadDate     DateTime @default(now())
-  userId         String?
+  id         String   @id @default(uuid())
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  filePath   String
+  content    String   @db.Text
+  uploadDate DateTime @default(now())
+  userId     String?
+  folder     Folder?  @relation(fields: [folderId], references: [id])
+  folderId   String?
+  tags       Tag[]
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  pdfs      PDF[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  pdfs      PDF[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
