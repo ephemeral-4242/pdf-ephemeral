@@ -4,7 +4,7 @@
 BACKEND_DIR="./apps/backend"
 
 # Change to the backend directory
-cd "$BACKEND_DIR"
+cd "$BACKEND_DIR" || exit
 
 # Check if .env file exists, if not create it
 if [ ! -f .env ]; then
@@ -15,13 +15,35 @@ else
     echo ".env file already exists. Make sure it contains the correct DATABASE_URL."
 fi
 
+# Install dependencies
+echo "Installing dependencies..."
+yarn install
+
+# Check if PostgreSQL is installed and running
+if ! command -v psql &> /dev/null; then
+    echo "PostgreSQL is not installed. Please install it and try again."
+    exit 1
+fi
+
+if ! pg_isready &> /dev/null; then
+    echo "PostgreSQL is not running. Please start it and try again."
+    exit 1
+fi
+
+# Create database if it doesn't exist
+DB_NAME="pdf_ephemeral_dev"
+if ! psql -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
+    echo "Creating database $DB_NAME..."
+    createdb "$DB_NAME"
+fi
+
 # Generate Prisma client
 echo "Generating Prisma client..."
 yarn prisma generate
 
-# Reset the database (this will drop the database, recreate it, and apply all migrations)
-echo "Resetting database..."
-yarn prisma migrate reset --force
+# Apply migrations
+echo "Applying migrations..."
+yarn prisma migrate deploy
 
 # Seed the database (uncomment if you have a seed script)
 # echo "Seeding the database..."
@@ -56,7 +78,16 @@ fi
 
 # Launch Qdrant using Docker
 echo "Launching Qdrant..."
-docker run -d -p 6333:6333 --name qdrant qdrant/qdrant
+if [ "$(docker ps -q -f name=qdrant)" ]; then
+    echo "Qdrant container is already running."
+else
+    if [ "$(docker ps -aq -f status=exited -f name=qdrant)" ]; then
+        # Cleanup
+        docker rm qdrant
+    fi
+    docker run -d -p 6333:6333 --name qdrant qdrant/qdrant
+fi
 
-echo "Prisma setup complete!"
+echo "Setup complete!"
+echo "Prisma is configured and migrations are applied."
 echo "Qdrant is running on port 6333"
