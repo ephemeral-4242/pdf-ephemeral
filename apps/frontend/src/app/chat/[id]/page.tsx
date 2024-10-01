@@ -38,12 +38,7 @@ export default function ChatPage() {
       <div className='w-full px-2 sm:px-4 py-4'>
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <Link href='/'>Home</Link>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              PDF Chat
-            </li>
+            <li className='breadcrumb-item active' aria-current='page'></li>
           </ol>
         </nav>
         <div className='flex justify-between items-center mb-4 bg-white p-4 rounded-lg shadow-md'>
