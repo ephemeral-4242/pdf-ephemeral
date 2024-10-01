@@ -58,7 +58,7 @@ export default function LibraryChatPage() {
               </div>
             </div>
             <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
-              <div className='h-full overflow-y-auto'>
+              <div className='h-full '>
                 <PdfChat pdfId='library' />
               </div>
             </div>

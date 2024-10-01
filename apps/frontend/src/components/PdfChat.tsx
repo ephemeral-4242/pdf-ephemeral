@@ -124,7 +124,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder='Ask a question about the PDF'
-            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800'
           />
           <button
             type='submit'
