@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { IPDFRepository } from './pdf-repository.interface';
-import { PDFDocument } from './pdf-document.interface';
+import { IPDFRepository } from '../interface/pdf-repository.interface';
+import { PDFDocument } from '../interface/pdf-document.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdf from 'pdf-parse';

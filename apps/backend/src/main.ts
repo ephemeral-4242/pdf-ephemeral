@@ -7,8 +7,6 @@ import { join } from 'path';
 
 dotenv.config();
 
-console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY); // Add this line to verify
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
