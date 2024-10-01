@@ -1,18 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
-import toast from 'react-hot-toast';
-import { api } from '../api/routes';
+import { usePdfUpload } from '../hooks/usePdfUpload';
 
-// Update the prop type to accept a function that takes a string parameter
 const PdfUpload = ({
   onUploadSuccess,
 }: {
   onUploadSuccess: (url: string) => void;
 }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
+  const { uploadPdf, isUploading, uploadProgress } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFile(acceptedFiles[0]);
@@ -28,29 +25,8 @@ const PdfUpload = ({
     e.preventDefault();
     if (!file) return;
 
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const result = await api.pdf.upload(formData, (chunk) => {
-        setUploadProgress(chunk);
-      });
-
-      if (!result.url) {
-        throw new Error('No URL returned from server');
-      }
-
-      toast.success('PDF uploaded successfully');
-      setFile(null);
-      onUploadSuccess(result.url);
-    } catch (error) {
-      console.error('Error uploading PDF:', error);
-      toast.error('Error uploading PDF');
-    } finally {
-      setIsUploading(false);
-      setUploadProgress('');
-    }
+    await uploadPdf(file, onUploadSuccess);
+    setFile(null);
   };
 
   return (

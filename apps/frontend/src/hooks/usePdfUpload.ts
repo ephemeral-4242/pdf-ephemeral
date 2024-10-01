@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../api/routes';
 import toast from 'react-hot-toast';
 
-export const usePdfOperations = () => {
+export const usePdfUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
 
@@ -15,6 +15,11 @@ export const usePdfOperations = () => {
       const result = await api.pdf.upload(formData, (chunk) => {
         setUploadProgress(chunk);
       });
+
+      if (!result.url) {
+        throw new Error('No URL returned from server');
+      }
+
       toast.success('PDF uploaded successfully');
       onSuccess(result.url);
     } catch (error) {
@@ -26,14 +31,5 @@ export const usePdfOperations = () => {
     }
   };
 
-  const chatWithPdf = async (question: string) => {
-    try {
-      return await api.pdf.chat(question);
-    } catch (error) {
-      console.error('Error chatting with PDF:', error);
-      toast.error('Error chatting with PDF');
-    }
-  };
-
-  return { uploadPdf, chatWithPdf, isUploading, uploadProgress };
+  return { uploadPdf, isUploading, uploadProgress };
 };
