@@ -14,6 +14,13 @@ import {
   SelectGroup,
   SelectSeparator,
 } from '@/components/common/Select'; // Import the Select components
+import CreateFolderModal from './CreateFolderModal';
+
+// Define the Folder type
+export interface Folder {
+  id: string;
+  name: string;
+}
 
 const PdfUpload = ({
   onUploadSuccess,
@@ -21,8 +28,9 @@ const PdfUpload = ({
   onUploadSuccess: (url: string) => void;
 }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const { uploadPdf, isUploading, uploadProgress } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -107,17 +115,31 @@ const PdfUpload = ({
               <SelectValue placeholder='Select a folder' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='none' disabled>
-                Select a folder
-              </SelectItem>
-              {folders.map((folder) => (
-                <SelectItem key={folder.id} value={folder.id}>
-                  {folder.name}
+              {folders.length === 0 ? (
+                <SelectItem value='none' disabled>
+                  No folders available
                 </SelectItem>
-              ))}
+              ) : (
+                folders.map((folder) => (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
+          <Button
+            onClick={() => setShowCreateFolderModal(true)}
+            className='mt-2'
+          >
+            Create Folder
+          </Button>
         </div>
+        <CreateFolderModal
+          show={showCreateFolderModal}
+          onClose={() => setShowCreateFolderModal(false)}
+          onCreate={(newFolder: Folder) => setFolders([...folders, newFolder])} // Use the Folder type here
+        />
         <Button
           type='submit'
           disabled={isUploading || !file || !selectedFolder}
@@ -148,17 +170,9 @@ const PdfUpload = ({
               Uploading...
             </>
           ) : (
-            <>
-              <FiUploadCloud className='mr-2' />
-              Upload PDF
-            </>
+            'Upload'
           )}
         </Button>
-        {uploadProgress && (
-          <div className='mt-2 text-sm text-gray-600 text-center'>
-            {uploadProgress}
-          </div>
-        )}
       </form>
     </div>
   );

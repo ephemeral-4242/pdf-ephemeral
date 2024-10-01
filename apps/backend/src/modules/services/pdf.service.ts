@@ -180,4 +180,13 @@ export class PdfService {
       res.status(500).end('Internal Server Error');
     }
   }
+
+  async createFolder(name: string): Promise<{ id: string; name: string }> {
+    try {
+      return await this.pdfRepository.getOrCreateFolder(name);
+    } catch (error) {
+      this.logger.error(`Error creating folder: ${error.message}`);
+      throw error;
+    }
+  }
 }

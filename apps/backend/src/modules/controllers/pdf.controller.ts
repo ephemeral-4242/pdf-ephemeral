@@ -101,4 +101,15 @@ export class PdfController {
       uploadDate: pdf.uploadDate,
     }));
   }
+
+  @Post('create-folder')
+  async createFolder(@Body('name') name: string, @Res() res: Response) {
+    try {
+      const folder = await this.pdfService.createFolder(name);
+      res.status(201).json(folder);
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 }

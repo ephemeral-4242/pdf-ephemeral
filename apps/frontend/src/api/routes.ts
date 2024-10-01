@@ -52,6 +52,14 @@ export const api = {
         },
         body: JSON.stringify({ question }),
       }),
+    createFolder: (name: string) =>
+      fetchApi('/pdf/create-folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      }),
   },
   contractAnalysis: {
     upload: (formData: FormData) =>
