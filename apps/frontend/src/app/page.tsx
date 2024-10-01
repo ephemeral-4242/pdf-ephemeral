@@ -18,7 +18,7 @@ export default function Home() {
       <div className='w-full max-w-2xl px-4 py-8'>
         <header className='mb-8 text-center'>
           <h1 className='text-4xl font-extrabold text-foreground'>
-            PDF Chat Application
+            Smart PDF Vault App
           </h1>
           <p className='text-lg text-gray-400 mt-2'>
             Upload your PDF and start chatting with it!
