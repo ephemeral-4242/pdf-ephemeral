@@ -32,9 +32,12 @@ export class PdfService {
 
   private conversation: ChatCompletionMessageParam[] = [];
 
-  async processAndSavePdf(file: Express.Multer.File): Promise<PDFDocument> {
+  async processAndSavePdf(
+    file: Express.Multer.File,
+    folderId?: string, // Changed from folderName to folderId
+  ): Promise<PDFDocument> {
     try {
-      const pdfDocument = await this.pdfRepository.save(file);
+      const pdfDocument = await this.pdfRepository.save(file, folderId);
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
@@ -55,6 +58,7 @@ export class PdfService {
                 pdfId: pdfDocument.id,
                 chunkIndex: index,
                 text: chunk,
+                folderId: folderId,
               },
             };
           } catch (error) {
@@ -83,6 +87,15 @@ export class PdfService {
 
   async getAllPdfs(): Promise<PDFDocument[]> {
     return this.pdfRepository.getAll();
+  }
+
+  async getAllFolders(): Promise<any[]> {
+    try {
+      return await this.pdfRepository.getAllFolders();
+    } catch (error) {
+      this.logger.error(`Error retrieving folders: ${error.message}`);
+      throw error;
+    }
   }
 
   resetConversation() {
@@ -160,6 +173,30 @@ export class PdfService {
     } catch (error) {
       this.logger.error(`Error in chatWithLibrary: ${error.message}`);
       res.status(500).end('Internal Server Error');
+    }
+  }
+
+  async createFolder(name: string): Promise<{ id: string; name: string }> {
+    try {
+      return await this.pdfRepository.getOrCreateFolder(name);
+    } catch (error) {
+      this.logger.error(`Error creating folder: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getPdfById(pdfId: string): Promise<PDFDocument> {
+    try {
+      const pdfDocument = await this.pdfRepository.getById(pdfId);
+      if (!pdfDocument) {
+        throw new NotFoundException(`PDF with id ${pdfId} not found`);
+      }
+      return pdfDocument;
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving PDF by id ${pdfId}: ${error.message}`,
+      );
+      throw error;
     }
   }
 }

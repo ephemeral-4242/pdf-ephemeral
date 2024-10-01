@@ -35,6 +35,7 @@ export const api = {
       }
     },
     getAll: () => fetchApi('/pdf'),
+    getAllFolders: () => fetchApi('/pdf/folders'),
     chat: (question: string, pdfId: string) =>
       fetchApi('/pdf/chat', {
         method: 'POST',
@@ -50,6 +51,14 @@ export const api = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ question }),
+      }),
+    createFolder: (name: string) =>
+      fetchApi('/pdf/create-folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
       }),
   },
   contractAnalysis: {

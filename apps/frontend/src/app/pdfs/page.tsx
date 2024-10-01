@@ -3,17 +3,32 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '../../api/routes';
-import { FileText, Calendar, MessageSquare, MoreVertical } from 'lucide-react';
+import {
+  FileText,
+  Folder as FolderIcon,
+  MessageSquare,
+  MoreVertical,
+  ChevronDown,
+  ChevronRight,
+  UploadCloud,
+} from 'lucide-react';
 
 interface PDF {
   id: string;
-  name: string;
+  fileName: string;
   uploadDate: string;
+  folder?: {
+    id: string;
+    name: string;
+  };
 }
 
 export default function PDFsPage() {
   const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [collapsedFolders, setCollapsedFolders] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -30,71 +45,108 @@ export default function PDFsPage() {
     fetchPdfs();
   }, []);
 
+  const toggleFolder = (folderName: string) => {
+    setCollapsedFolders((prev) => ({
+      ...prev,
+      [folderName]: !prev[folderName],
+    }));
+  };
+
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center h-screen'>
-        <div className='animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500'></div>
+      <div className='flex justify-center items-center h-screen bg-gray-900'>
+        <div className='animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500'></div>
       </div>
     );
   }
 
+  const groupedPdfs = pdfs.reduce(
+    (acc, pdf) => {
+      const folderName = pdf.folder ? pdf.folder.name : 'Root';
+      if (!acc[folderName]) {
+        acc[folderName] = [];
+      }
+      acc[folderName].push(pdf);
+      return acc;
+    },
+    {} as Record<string, PDF[]>
+  );
+
   return (
-    <div className='container mx-auto py-8 px-4'>
-      <h1 className='text-3xl font-bold mb-8 text-foreground'>
-        Your PDF Library
-      </h1>
-      {pdfs.length === 0 ? (
-        <div className='text-center py-16 bg-gray-800 rounded-lg'>
-          <FileText className='mx-auto h-12 w-12 text-gray-400' />
-          <p className='mt-2 text-sm font-medium text-gray-300'>
+    <div className='container mx-auto py-12 px-6 bg-gray-900 text-gray-100'>
+      <h1 className='text-3xl font-semibold mb-8'>Your PDF Library</h1>
+
+      {Object.keys(groupedPdfs).length === 0 ? (
+        <div className='flex flex-col items-center justify-center py-16 bg-gray-800 rounded-lg'>
+          <UploadCloud className='h-16 w-16 text-gray-400' />
+          <p className='mt-4 text-xl font-medium text-gray-300'>
             No PDFs uploaded yet
           </p>
-          <p className='mt-1 text-sm text-gray-400'>
-            Get started by uploading a PDF
-          </p>
-          <Link
-            href='/'
-            className='mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-          >
-            Upload a PDF
+          <p className='mt-2 text-gray-400'>Get started by uploading a PDF.</p>
+          <Link href='/' passHref>
+            <button className='mt-6 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md'>
+              Upload a PDF
+            </button>
           </Link>
         </div>
       ) : (
-        <div className='bg-gray-800 shadow overflow-hidden sm:rounded-md'>
-          <ul className='divide-y divide-gray-700'>
-            {pdfs.map((pdf) => (
-              <li key={pdf.id}>
-                <div className='px-4 py-4 sm:px-6 hover:bg-gray-700 transition duration-150 ease-in-out'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center'>
-                      <div className='flex-shrink-0'>
-                        <FileText className='h-8 w-8 text-primary' />
-                      </div>
-                      <div className='ml-4'>
-                        <div className='text-sm font-medium text-gray-200'>
-                          {pdf.name}
-                        </div>
-                        <div className='text-xs text-gray-400'>
-                          Uploaded: {new Date(pdf.uploadDate).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className='flex items-center space-x-4'>
-                      <Link
-                        href={`/chat/${pdf.id}`}
-                        className='text-primary hover:text-indigo-400'
-                      >
-                        <MessageSquare className='h-5 w-5' />
-                      </Link>
-                      <button className='text-gray-400 hover:text-gray-300'>
-                        <MoreVertical className='h-5 w-5' />
-                      </button>
-                    </div>
-                  </div>
+        <div className='space-y-8'>
+          {Object.entries(groupedPdfs).map(([folderName, pdfs]) => (
+            <div key={folderName}>
+              <div
+                className='flex items-center justify-between cursor-pointer'
+                onClick={() => toggleFolder(folderName)}
+              >
+                <div className='flex items-center'>
+                  {collapsedFolders[folderName] ? (
+                    <ChevronRight className='h-5 w-5 text-gray-400' />
+                  ) : (
+                    <ChevronDown className='h-5 w-5 text-gray-400' />
+                  )}
+                  <FolderIcon className='h-6 w-6 text-yellow-400 ml-2' />
+                  <h2 className='ml-3 text-lg font-medium text-gray-100'>
+                    {folderName}
+                  </h2>
                 </div>
-              </li>
-            ))}
-          </ul>
+                <span className='text-sm text-gray-400'>
+                  {pdfs.length} {pdfs.length > 1 ? 'files' : 'file'}
+                </span>
+              </div>
+              {!collapsedFolders[folderName] && (
+                <ul className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4'>
+                  {pdfs.map((pdf) => (
+                    <li key={pdf.id}>
+                      <div className='group relative bg-gray-800 border border-gray-700 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow'>
+                        <div className='flex items-center'>
+                          <FileText className='h-8 w-8 text-blue-400' />
+                          <div className='ml-3'>
+                            <p className='text-sm font-medium text-gray-100'>
+                              {pdf.fileName}
+                            </p>
+                            <p className='text-xs text-gray-400'>
+                              {new Date(pdf.uploadDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                          <div className='flex space-x-2'>
+                            <Link href={`/chat/${pdf.id}`} passHref>
+                              <button className='p-1 rounded-full text-gray-400 hover:bg-gray-700'>
+                                <MessageSquare className='h-5 w-5' />
+                              </button>
+                            </Link>
+                            <button className='p-1 rounded-full text-gray-400 hover:bg-gray-700'>
+                              <MoreVertical className='h-5 w-5' />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

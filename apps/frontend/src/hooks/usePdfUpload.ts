@@ -6,10 +6,15 @@ export const usePdfUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
 
-  const uploadPdf = async (file: File, onSuccess: (url: string) => void) => {
+  const uploadPdf = async (
+    file: File,
+    onSuccess: (url: string) => void,
+    folderId: string
+  ) => {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('folderId', folderId);
 
     try {
       const result = await api.pdf.upload(formData, (chunk) => {
