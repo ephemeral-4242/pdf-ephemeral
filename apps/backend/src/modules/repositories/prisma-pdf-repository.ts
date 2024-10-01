@@ -104,7 +104,6 @@ export class PrismaPDFRepository implements IPDFRepository {
       folder: pdf.folder
         ? { id: pdf.folder.id, name: pdf.folder.name }
         : undefined,
-      tags: [], // Keep an empty array for compatibility with the interface
     }));
   }
 

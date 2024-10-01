@@ -105,8 +105,16 @@ export class PdfController {
     const pdfs = await this.pdfService.getAllPdfs();
     return pdfs.map((pdf) => ({
       id: pdf.id,
-      name: pdf.id, // Using id as name for now
+      fileName: pdf.fileName,
+      fileSize: pdf.fileSize,
+      mimeType: pdf.mimeType,
+      filePath: pdf.filePath,
+      content: pdf.content,
       uploadDate: pdf.uploadDate,
+      userId: pdf.userId,
+      folder: pdf.folder
+        ? { id: pdf.folder.id, name: pdf.folder.name }
+        : undefined,
     }));
   }
 
