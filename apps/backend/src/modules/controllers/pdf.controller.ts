@@ -12,6 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
 import { Request, Response } from 'express';
+import { RateLimitError } from 'openai';
 
 @Controller('pdf')
 export class PdfController {
@@ -56,14 +57,22 @@ export class PdfController {
     @Res() res: Response,
   ) {
     if (!question) {
-      throw new BadRequestException('Question is required');
+      return res.status(400).json({ error: 'Question is required' });
     }
     try {
-      const response = await this.pdfService.chatWithLibrary(question, res);
-      res.json(response);
+      await this.pdfService.chatWithLibrary(question, res);
+      // The response is handled within the service method, so we don't need to do anything here
     } catch (error) {
       console.error('Error chatting with library:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      if (!res.headersSent) {
+        if (error instanceof RateLimitError) {
+          res
+            .status(429)
+            .json({ error: 'Rate limit exceeded. Please try again later.' });
+        } else {
+          res.status(500).json({ error: 'Internal Server Error' });
+        }
+      }
     }
   }
 
