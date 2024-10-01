@@ -18,18 +18,9 @@ model PDF {
   userId     String?
   folder     Folder?  @relation(fields: [folderId], references: [id])
   folderId   String?
-  tags       Tag[]
 }
 
 model Folder {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  pdfs      PDF[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Tag {
   id        String   @id @default(uuid())
   name      String   @unique
   pdfs      PDF[]
