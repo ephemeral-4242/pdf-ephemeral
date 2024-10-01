@@ -4,11 +4,13 @@ import { PDFDocument } from '../interface/pdf-document.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdf from 'pdf-parse';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class InMemoryPDFRepository implements IPDFRepository {
   private documents: Map<string, PDFDocument> = new Map();
   private uploadDir = './uploads';
+  private folders: Map<string, { id: string; name: string }> = new Map();
 
   async save(file: Express.Multer.File): Promise<PDFDocument> {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -67,5 +69,18 @@ export class InMemoryPDFRepository implements IPDFRepository {
     const dataBuffer = fs.readFileSync(filepath);
     const pdfData = await pdf(dataBuffer);
     return pdfData.text;
+  }
+
+  async getOrCreateFolder(
+    folderName: string,
+  ): Promise<{ id: string; name: string }> {
+    let folder = Array.from(this.folders.values()).find(
+      (f) => f.name === folderName,
+    );
+    if (!folder) {
+      folder = { id: uuidv4(), name: folderName };
+      this.folders.set(folder.id, folder);
+    }
+    return folder;
   }
 }

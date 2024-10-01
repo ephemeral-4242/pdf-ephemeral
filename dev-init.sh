@@ -37,6 +37,11 @@ if ! psql -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
     createdb "$DB_NAME"
 fi
 
+# Grant necessary permissions to the PostgreSQL user
+echo "Granting necessary permissions to the PostgreSQL user..."
+psql -c "GRANT pg_signal_backend TO pdf_user;"
+psql -c "GRANT pdf_user TO pdf_user;"  # Ensure the user is a member of the role
+
 # Generate Prisma client
 echo "Generating Prisma client..."
 yarn prisma generate

@@ -13,28 +13,30 @@ export class PrismaPDFRepository implements IPDFRepository {
 
   async save(
     file: Express.Multer.File,
-    folderName?: string,
+    folderId?: string,
   ): Promise<PDFDocument> {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const filename = `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`;
-    const filePath = path.join('uploads', filename);
 
-    if (!fs.existsSync('uploads')) {
-      fs.mkdirSync('uploads', { recursive: true });
+    let folderPath = 'uploads';
+    if (folderId) {
+      const folder = await this.prisma.folder.findUnique({
+        where: { id: folderId },
+      });
+      if (folder) {
+        folderPath = path.join('uploads', folder.name);
+      }
+    }
+
+    const filePath = path.join(folderPath, filename);
+
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
     }
 
     fs.writeFileSync(filePath, file.buffer);
 
     const content = await this.extractText(file.buffer);
-
-    let folder = null;
-    if (folderName) {
-      folder = await this.prisma.folder.upsert({
-        where: { name: folderName },
-        update: {},
-        create: { name: folderName },
-      });
-    }
 
     const pdfDocument = await this.prisma.pDF.create({
       data: {
@@ -44,7 +46,7 @@ export class PrismaPDFRepository implements IPDFRepository {
         mimeType: file.mimetype,
         filePath: filePath,
         content: content,
-        folderId: folder?.id,
+        folderId: folderId,
       },
       include: {
         folder: true,
@@ -107,9 +109,11 @@ export class PrismaPDFRepository implements IPDFRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.pDF.delete({
-      where: { id },
-    });
+    const pdf = await this.prisma.pDF.findUnique({ where: { id } });
+    if (pdf && fs.existsSync(pdf.filePath)) {
+      fs.unlinkSync(pdf.filePath);
+    }
+    await this.prisma.pDF.delete({ where: { id } });
   }
 
   private async extractText(buffer: Buffer): Promise<string> {
@@ -119,5 +123,20 @@ export class PrismaPDFRepository implements IPDFRepository {
 
   async getFolders(): Promise<Folder[]> {
     return this.prisma.folder.findMany();
+  }
+
+  async getOrCreateFolder(
+    folderName: string,
+  ): Promise<{ id: string; name: string }> {
+    const folder = await this.prisma.folder.upsert({
+      where: { name: folderName },
+      update: {},
+      create: { name: folderName },
+    });
+    const folderPath = path.join('uploads', folderName);
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    return { id: folder.id, name: folder.name };
   }
 }

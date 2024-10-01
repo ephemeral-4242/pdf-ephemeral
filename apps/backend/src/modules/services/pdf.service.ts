@@ -37,7 +37,12 @@ export class PdfService {
     folderName?: string,
   ): Promise<PDFDocument> {
     try {
-      const pdfDocument = await this.pdfRepository.save(file, folderName);
+      let folder = null;
+      if (folderName) {
+        folder = await this.pdfRepository.getOrCreateFolder(folderName);
+      }
+
+      const pdfDocument = await this.pdfRepository.save(file, folder?.id);
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
@@ -58,7 +63,7 @@ export class PdfService {
                 pdfId: pdfDocument.id,
                 chunkIndex: index,
                 text: chunk,
-                folderId: pdfDocument.folder?.id,
+                folderId: folder?.id,
               },
             };
           } catch (error) {
