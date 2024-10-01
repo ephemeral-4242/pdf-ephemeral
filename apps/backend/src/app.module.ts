@@ -11,6 +11,9 @@ import { IPDFRepository } from './modules/repositories/pdf-repository.interface'
 import { PDF_REPOSITORY } from './modules/repositories/pdf-repository.interface';
 import { PrismaService } from './modules/prisma/prisma.service';
 
+import { EmbeddingService } from './modules/services/embedding.service';
+import { QdrantService } from './modules/services/qdrant-service';
+
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -23,6 +26,8 @@ import { PrismaService } from './modules/prisma/prisma.service';
     AppService,
     PdfService,
     PrismaService,
+    QdrantService,
+    EmbeddingService,
     {
       provide: PDF_REPOSITORY,
       useClass: PrismaPDFRepository,

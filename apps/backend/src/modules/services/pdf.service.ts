@@ -8,11 +8,11 @@ import {
 } from '../repositories/pdf-repository.interface';
 import { PDFDocument } from '../repositories/pdf-document.interface';
 
-import { generateEmbedding } from '../../utils/embedding';
-import { upsertPoints } from '../services/qdrant-service';
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
-import { createCollection, queryQdrant } from '../services/qdrant-service';
+
+import { EmbeddingService } from './embedding.service';
+import { QdrantService } from './qdrant-service';
 
 @Injectable()
 export class PdfService {
@@ -20,7 +20,11 @@ export class PdfService {
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   private pdfText: string;
 
-  constructor(@Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository) {}
+  constructor(
+    @Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository,
+    private qdrantService: QdrantService,
+    private embeddingService: EmbeddingService,
+  ) {}
 
   private conversation: Array<{
     role: 'system' | 'user' | 'assistant';
@@ -33,21 +37,18 @@ export class PdfService {
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
-      // Ensure the collection exists
-      await createCollection('pdf_collection');
+      await this.qdrantService.createCollection('pdf_collection');
 
-      // Split the text into larger chunks
-      const chunks = splitTextIntoChunks(this.pdfText, 2000); // Adjust chunk size as needed
+      const chunks = splitTextIntoChunks(this.pdfText, 2000);
 
       console.log('chunks', chunks.length);
 
-      // Generate embeddings for each chunk and store them in Qdrant
       const points = await Promise.all(
         chunks.map(async (chunk, index) => {
           try {
-            const vector = await generateEmbedding(chunk);
+            const vector = await this.embeddingService.generateEmbedding(chunk);
             return {
-              id: uuidv4(), // Generate a valid UUID for the point ID
+              id: uuidv4(),
               vector,
               payload: {
                 pdfId: pdfDocument.id,
@@ -64,7 +65,7 @@ export class PdfService {
         }),
       );
 
-      await upsertPoints('pdf_collection', points); // Ensure 'pdf_collection' exists in Qdrant
+      await this.qdrantService.upsertPoints('pdf_collection', points);
 
       return pdfDocument;
     } catch (error) {
@@ -149,14 +150,11 @@ export class PdfService {
 
   async chatWithLibrary(question: string, res: Response): Promise<void> {
     try {
-      console.log('question: ', question);
-      // Step 1: Vectorize the query
-      const queryVector = await generateEmbedding(question);
+      const queryVector =
+        await this.embeddingService.generateEmbedding(question);
+      const retrievedContent =
+        await this.qdrantService.queryQdrant(queryVector);
 
-      // Step 2: Query Qdrant with the vector
-      const retrievedContent = await queryQdrant(queryVector);
-
-      // Step 3: Stream response from LLM using the retrieved content
       const stream = await this.openai.chat.completions.create({
         model: 'gpt-4',
         stream: true,
@@ -186,7 +184,6 @@ export class PdfService {
       for await (const part of stream) {
         const content = part.choices[0].delta?.content || '';
         assistantReply += content;
-
         res.write(content);
       }
 
