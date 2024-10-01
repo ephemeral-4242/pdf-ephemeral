@@ -1,4 +1,4 @@
-import { PDFDocument } from './pdf-document.interface';
+import { PDFDocument } from '../interface/pdf-document.interface';
 
 export interface IPDFRepository {
   save(file: Express.Multer.File): Promise<PDFDocument>;

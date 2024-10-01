@@ -7,13 +7,13 @@ import { HelloController } from './modules/controllers/hello.controller';
 import { PdfController } from './modules/controllers/pdf.controller';
 import { PdfService } from './modules/services/pdf.service';
 import { PrismaPDFRepository } from './modules/repositories/prisma-pdf-repository';
-import { IPDFRepository } from './modules/repositories/pdf-repository.interface';
-import { PDF_REPOSITORY } from './modules/repositories/pdf-repository.interface';
+
 import { PrismaService } from './modules/prisma/prisma.service';
 
 import { EmbeddingService } from './modules/services/embedding.service';
 import { QdrantService } from './modules/services/qdrant-service';
 import { OpenAIService } from './modules/services/openai.service';
+import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
 
 @Module({
   imports: [

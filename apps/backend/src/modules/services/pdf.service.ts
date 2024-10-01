@@ -2,11 +2,8 @@ import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
 import { Response } from 'express';
-import {
-  IPDFRepository,
-  PDF_REPOSITORY,
-} from '../repositories/pdf-repository.interface';
-import { PDFDocument } from '../repositories/pdf-document.interface';
+
+import { PDFDocument } from '../interface/pdf-document.interface';
 
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,6 +12,10 @@ import { EmbeddingService } from './embedding.service';
 import { QdrantService } from './qdrant-service';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { OpenAIService } from './openai.service';
+import {
+  IPDFRepository,
+  PDF_REPOSITORY,
+} from '../interface/pdf-repository.interface';
 
 @Injectable()
 export class PdfService {
