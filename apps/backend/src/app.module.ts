@@ -13,6 +13,7 @@ import { PrismaService } from './modules/prisma/prisma.service';
 
 import { EmbeddingService } from './modules/services/embedding.service';
 import { QdrantService } from './modules/services/qdrant-service';
+import { OpenAIService } from './modules/services/openai.service';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { QdrantService } from './modules/services/qdrant-service';
     PrismaService,
     QdrantService,
     EmbeddingService,
+    OpenAIService,
     {
       provide: PDF_REPOSITORY,
       useClass: PrismaPDFRepository,

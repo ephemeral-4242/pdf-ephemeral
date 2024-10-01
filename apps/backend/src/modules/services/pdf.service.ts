@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { EmbeddingService } from './embedding.service';
 import { QdrantService } from './qdrant-service';
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { OpenAIService } from './openai.service';
 
 @Injectable()
 export class PdfService {
@@ -24,12 +26,10 @@ export class PdfService {
     @Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository,
     private qdrantService: QdrantService,
     private embeddingService: EmbeddingService,
+    private openAIService: OpenAIService,
   ) {}
 
-  private conversation: Array<{
-    role: 'system' | 'user' | 'assistant';
-    content: string;
-  }> = [];
+  private conversation: ChatCompletionMessageParam[] = [];
 
   async processAndSavePdf(file: Express.Multer.File): Promise<PDFDocument> {
     try {
@@ -119,26 +119,11 @@ export class PdfService {
         { role: 'user', content: question },
       ];
 
-      const stream = await this.openai.chat.completions.create({
-        model: 'gpt-4',
-        stream: true,
-        messages: this.conversation,
-      });
-
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      res.flushHeaders();
-
-      let assistantReply = '';
-
-      for await (const part of stream) {
-        const content = part.choices[0].delta?.content || '';
-        assistantReply += content;
-        res.write(content);
-      }
-
-      res.end();
+      const assistantReply =
+        await this.openAIService.createChatCompletionStream(
+          this.conversation,
+          res,
+        );
 
       // Add assistant's reply to the conversation
       this.conversation.push({ role: 'assistant', content: assistantReply });
@@ -155,41 +140,24 @@ export class PdfService {
       const retrievedContent =
         await this.qdrantService.queryQdrant(queryVector);
 
-      const stream = await this.openai.chat.completions.create({
-        model: 'gpt-4',
-        stream: true,
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI assistant that answers questions based on the provided content. Use the provided content to answer the user's question as accurately as possible.`,
-          },
-          {
-            role: 'system',
-            content: `Content retrieved from the library:\n\n${retrievedContent.join('\n\n')}`,
-          },
-          {
-            role: 'user',
-            content: `Question: ${question}`,
-          },
-        ],
-      });
+      const messages: ChatCompletionMessageParam[] = [
+        {
+          role: 'system',
+          content: `You are an AI assistant that answers questions based on the provided content. Use the provided content to answer the user's question as accurately as possible.`,
+        },
+        {
+          role: 'system',
+          content: `Content retrieved from the library:\n\n${retrievedContent.join('\n\n')}`,
+        },
+        {
+          role: 'user',
+          content: `Question: ${question}`,
+        },
+      ];
 
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      res.flushHeaders();
-
-      let assistantReply = '';
-
-      for await (const part of stream) {
-        const content = part.choices[0].delta?.content || '';
-        assistantReply += content;
-        res.write(content);
-      }
-
-      res.end();
+      await this.openAIService.createChatCompletionStream(messages, res);
     } catch (error) {
-      console.error('Error in chatWithLibrary:', error);
+      this.logger.error(`Error in chatWithLibrary: ${error.message}`);
       res.status(500).end('Internal Server Error');
     }
   }
