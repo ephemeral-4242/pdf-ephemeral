@@ -11,5 +11,4 @@ export interface PDFDocument {
     id: string;
     name: string;
   };
-  tags: string[];
 }

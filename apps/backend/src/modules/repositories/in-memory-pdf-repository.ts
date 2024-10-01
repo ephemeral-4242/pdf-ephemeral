@@ -27,6 +27,10 @@ export class InMemoryPDFRepository implements IPDFRepository {
 
     const pdfDocument: PDFDocument = {
       id: filename,
+      fileName: file.originalname,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+      filePath: filepath,
       content: extractedText,
       uploadDate: new Date(),
     };

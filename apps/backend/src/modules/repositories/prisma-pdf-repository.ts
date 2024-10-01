@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PDFDocument } from '../interface/pdf-document.interface';
-import { Folder, Prisma, PrismaClient, Tag } from '@prisma/client';
+import { Folder, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as pdf from 'pdf-parse';
 import * as path from 'path';
@@ -56,7 +56,6 @@ export class PrismaPDFRepository implements IPDFRepository {
       folder: pdfDocument.folder
         ? { id: pdfDocument.folder.id, name: pdfDocument.folder.name }
         : undefined,
-      tags: [], // Keep an empty array for compatibility with the interface
     };
   }
 
@@ -82,7 +81,6 @@ export class PrismaPDFRepository implements IPDFRepository {
       folder: pdf.folder
         ? { id: pdf.folder.id, name: pdf.folder.name }
         : undefined,
-      tags: [], // Keep an empty array for compatibility with the interface
     };
   }
 
@@ -121,9 +119,5 @@ export class PrismaPDFRepository implements IPDFRepository {
 
   async getFolders(): Promise<Folder[]> {
     return this.prisma.folder.findMany();
-  }
-
-  async getTags(): Promise<Tag[]> {
-    return this.prisma.tag.findMany();
   }
 }

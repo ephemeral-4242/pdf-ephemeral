@@ -32,9 +32,12 @@ export class PdfService {
 
   private conversation: ChatCompletionMessageParam[] = [];
 
-  async processAndSavePdf(file: Express.Multer.File): Promise<PDFDocument> {
+  async processAndSavePdf(
+    file: Express.Multer.File,
+    folderName?: string,
+  ): Promise<PDFDocument> {
     try {
-      const pdfDocument = await this.pdfRepository.save(file);
+      const pdfDocument = await this.pdfRepository.save(file, folderName);
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
@@ -55,6 +58,7 @@ export class PdfService {
                 pdfId: pdfDocument.id,
                 chunkIndex: index,
                 text: chunk,
+                folderId: pdfDocument.folder?.id,
               },
             };
           } catch (error) {

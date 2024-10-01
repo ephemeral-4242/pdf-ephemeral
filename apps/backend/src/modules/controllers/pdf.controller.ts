@@ -22,6 +22,7 @@ export class PdfController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadPdf(
     @UploadedFile() file: Express.Multer.File,
+    @Body('folderName') folderName: string,
     @Res() res: Response,
     @Req() req: Request,
   ) {
@@ -29,13 +30,17 @@ export class PdfController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const pdfDocument = await this.pdfService.processAndSavePdf(file);
+    const pdfDocument = await this.pdfService.processAndSavePdf(
+      file,
+      folderName,
+    );
 
     const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${pdfDocument.id}`;
 
     res.status(200).json({
       message: 'PDF uploaded and text extracted.',
       url: fileUrl,
+      folder: pdfDocument.folder,
     });
   }
 
