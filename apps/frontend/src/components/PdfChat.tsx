@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { Send, Loader2 } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,14 +16,15 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,6 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     setIsLoading(true);
     setQuestion('');
 
-    // Display user's question
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: 'user', content: trimmedQuestion },
@@ -43,9 +44,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
         `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: trimmedQuestion, pdfId }),
         }
       );
@@ -56,31 +55,24 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let done = false;
       let assistantReply = '';
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value);
-          assistantReply += chunk;
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { role: 'assistant', content: '' },
+      ]);
 
-          // Update the last assistant message
-          setMessages((prevMessages) => {
-            const lastMessage = prevMessages[prevMessages.length - 1];
-            if (lastMessage && lastMessage.role === 'assistant') {
-              // Update existing assistant message
-              return [
-                ...prevMessages.slice(0, -1),
-                { role: 'assistant', content: lastMessage.content + chunk },
-              ];
-            } else {
-              // Add new assistant message
-              return [...prevMessages, { role: 'assistant', content: chunk }];
-            }
-          });
-        }
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        assistantReply += chunk;
+
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages];
+          newMessages[newMessages.length - 1].content = assistantReply;
+          return newMessages;
+        });
       }
     } catch (error) {
       console.error('Error chatting with PDF:', error);
@@ -90,74 +82,66 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     }
   };
 
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setQuestion(e.target.value);
+    adjustTextareaHeight();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
   return (
-    <div className='max-w-3xl mx-auto p-4 flex flex-col h-screen'>
-      <div className='flex-grow space-y-4 overflow-y-auto pr-2'>
-        {messages.length === 0 ? (
-          <div className='flex items-center justify-center h-full text-gray-500'>
-            No messages yet. Ask a question about the PDF.
+    <div className='flex flex-col h-full bg-gray-900'>
+      <div className='flex-grow overflow-y-auto p-4 space-y-4'>
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`p-4 rounded-lg ${
+              msg.role === 'user'
+                ? 'bg-blue-600 text-white ml-auto max-w-[80%]'
+                : 'bg-gray-800 text-gray-200 max-w-[80%]'
+            }`}
+          >
+            <p className='whitespace-pre-wrap'>{msg.content}</p>
           </div>
-        ) : (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`p-4 rounded-lg ${
-                msg.role === 'user'
-                  ? 'bg-blue-100 ml-auto max-w-[80%]'
-                  : 'bg-gray-100 border border-gray-200 max-w-[80%]'
-              }`}
-            >
-              <p className='text-gray-800 whitespace-pre-wrap'>{msg.content}</p>
-            </div>
-          ))
-        )}
+        ))}
         <div ref={messagesEndRef} />
       </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className='bg-white p-4 rounded-t-lg shadow-sm sticky bottom-0'
-      >
-        <div className='flex space-x-2'>
-          <input
-            type='text'
+      <form onSubmit={handleSubmit} className='p-4 bg-gray-800'>
+        <div className='flex items-end space-x-2'>
+          <textarea
+            ref={textareaRef}
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder='Ask a question about the PDF'
-            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800'
+            onChange={handleTextareaChange}
+            onKeyDown={handleKeyDown}
+            placeholder='Ask a question about the PDF...'
+            className='flex-grow p-2 bg-gray-700 text-white rounded-lg resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+            rows={1}
           />
           <button
             type='submit'
             disabled={isLoading || !question.trim()}
-            className={`px-6 py-3 text-white font-semibold rounded-lg transition-colors ${
+            className={`p-2 rounded-full ${
               isLoading || !question.trim()
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700'
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
             }`}
           >
             {isLoading ? (
-              <svg
-                className='animate-spin h-5 w-5 text-white'
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-              >
-                <circle
-                  className='opacity-25'
-                  cx='12'
-                  cy='12'
-                  r='10'
-                  stroke='currentColor'
-                  strokeWidth='4'
-                ></circle>
-                <path
-                  className='opacity-75'
-                  fill='currentColor'
-                  d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'
-                ></path>
-              </svg>
+              <Loader2 className='w-6 h-6 animate-spin' />
             ) : (
-              'Ask'
+              <Send className='w-6 h-6' />
             )}
           </button>
         </div>

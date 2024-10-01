@@ -27,6 +27,33 @@ yarn prisma migrate reset --force
 # echo "Seeding the database..."
 # yarn prisma db seed
 
+# Check if Docker is running, if not start it
+if ! docker info > /dev/null 2>&1; then
+    echo "Docker is not running. Attempting to start Docker..."
+    
+    # Check the operating system
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        open -a Docker
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux (assuming systemd)
+        sudo systemctl start docker
+    elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "win32" ]]; then
+        # Windows
+        start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    else
+        echo "Unsupported operating system. Please start Docker manually."
+        exit 1
+    fi
+
+    # Wait for Docker to start
+    echo "Waiting for Docker to start..."
+    while ! docker info > /dev/null 2>&1; do
+        sleep 1
+    done
+    echo "Docker has started successfully."
+fi
+
 # Launch Qdrant using Docker
 echo "Launching Qdrant..."
 docker run -d -p 6333:6333 --name qdrant qdrant/qdrant

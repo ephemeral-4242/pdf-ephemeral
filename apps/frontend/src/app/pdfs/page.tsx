@@ -40,41 +40,41 @@ export default function PDFsPage() {
 
   return (
     <div className='container mx-auto py-8 px-4'>
-      <h1 className='text-3xl font-bold mb-8 text-gray-800'>
+      <h1 className='text-3xl font-bold mb-8 text-foreground'>
         Your PDF Library
       </h1>
       {pdfs.length === 0 ? (
-        <div className='text-center py-16 bg-gray-50 rounded-lg'>
+        <div className='text-center py-16 bg-gray-800 rounded-lg'>
           <FileText className='mx-auto h-12 w-12 text-gray-400' />
-          <p className='mt-2 text-sm font-medium text-gray-900'>
+          <p className='mt-2 text-sm font-medium text-gray-300'>
             No PDFs uploaded yet
           </p>
-          <p className='mt-1 text-sm text-gray-500'>
+          <p className='mt-1 text-sm text-gray-400'>
             Get started by uploading a PDF
           </p>
           <Link
             href='/'
-            className='mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500'
+            className='mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
           >
             Upload a PDF
           </Link>
         </div>
       ) : (
-        <div className='bg-white shadow overflow-hidden sm:rounded-md'>
-          <ul className='divide-y divide-gray-200'>
+        <div className='bg-gray-800 shadow overflow-hidden sm:rounded-md'>
+          <ul className='divide-y divide-gray-700'>
             {pdfs.map((pdf) => (
               <li key={pdf.id}>
-                <div className='px-4 py-4 sm:px-6 hover:bg-gray-50 transition duration-150 ease-in-out'>
+                <div className='px-4 py-4 sm:px-6 hover:bg-gray-700 transition duration-150 ease-in-out'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0'>
-                        <FileText className='h-8 w-8 text-purple-500' />
+                        <FileText className='h-8 w-8 text-primary' />
                       </div>
                       <div className='ml-4'>
-                        <div className='text-sm font-medium text-gray-900'>
+                        <div className='text-sm font-medium text-gray-200'>
                           {pdf.name}
                         </div>
-                        <div className='text-xs text-gray-500'>
+                        <div className='text-xs text-gray-400'>
                           Uploaded: {new Date(pdf.uploadDate).toLocaleString()}
                         </div>
                       </div>
@@ -82,11 +82,11 @@ export default function PDFsPage() {
                     <div className='flex items-center space-x-4'>
                       <Link
                         href={`/chat/${pdf.id}`}
-                        className='text-purple-600 hover:text-purple-900'
+                        className='text-primary hover:text-indigo-400'
                       >
                         <MessageSquare className='h-5 w-5' />
                       </Link>
-                      <button className='text-gray-400 hover:text-gray-500'>
+                      <button className='text-gray-400 hover:text-gray-300'>
                         <MoreVertical className='h-5 w-5' />
                       </button>
                     </div>

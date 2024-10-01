@@ -16,9 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='h-full'>
-      <body className='min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-purple-100'>
-        <nav className='bg-purple-600 text-white shadow-md'>
-          <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
+      <body className='h-full flex bg-background text-foreground'>
+        <nav className='fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-md overflow-y-auto'>
+          <div className='p-4'>
             <Link
               href='/'
               className='text-xl font-semibold flex items-center space-x-2'
@@ -26,41 +26,46 @@ export default function RootLayout({
               <Home className='h-6 w-6' />
               <span>My App</span>
             </Link>
-            <div className='space-x-4 flex items-center'>
-              <Link
-                href='/'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
-              >
-                <Home className='h-5 w-5' />
-                <span>Home</span>
-              </Link>
-              <Link
-                href='/pdfs'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
-              >
-                <FileText className='h-5 w-5' />
-                <span>View PDFs</span>
-              </Link>
-              <Link
-                href='/library-chat'
-                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
-              >
-                <MessageSquare className='h-5 w-5' />
-                <span>Library Chat</span>
-              </Link>
-            </div>
+          </div>
+          <div className='mt-8 space-y-2'>
+            <NavLink href='/' icon={<Home className='h-5 w-5' />} text='Home' />
+            <NavLink
+              href='/pdfs'
+              icon={<FileText className='h-5 w-5' />}
+              text='View PDFs'
+            />
+            <NavLink
+              href='/library-chat'
+              icon={<MessageSquare className='h-5 w-5' />}
+              text='Library Chat'
+            />
           </div>
         </nav>
-        <main className='flex-grow container mx-auto px-4 py-8'>
-          {children}
-        </main>
-        <footer className='bg-purple-200 text-purple-600 py-4'>
-          <div className='container mx-auto px-4 text-center'>
-            © 2024 My App. All rights reserved.
-          </div>
-        </footer>
+        <div className='ml-64 flex-1 flex flex-col'>
+          <main className='flex-1 p-8 overflow-y-auto'>{children}</main>
+        </div>
         <Toaster />
       </body>
     </html>
+  );
+}
+
+function NavLink({
+  href,
+  icon,
+  text,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  text: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className='flex items-center space-x-2 px-4 py-2 hover:bg-gray-700 transition-colors'
+    >
+      {icon}
+      <span>{text}</span>
+    </Link>
   );
 }

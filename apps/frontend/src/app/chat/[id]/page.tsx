@@ -34,25 +34,25 @@ export default function ChatPage() {
   }, [params.id]);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+    <div className='min-h-screen bg-background'>
       <div className='w-full px-2 sm:px-4 py-4'>
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item active' aria-current='page'></li>
           </ol>
         </nav>
-        <div className='flex justify-between items-center mb-4 bg-white p-4 rounded-lg shadow-md'>
-          <h1 className='text-2xl font-bold text-gray-900'>PDF Chat</h1>
+        <div className='flex justify-between items-center mb-4 bg-gray-800 p-4 rounded-lg shadow-md'>
+          <h1 className='text-2xl font-bold text-foreground'>PDF Chat</h1>
           <Link
             href='/'
-            className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'
+            className='px-4 py-2 bg-primary text-white rounded-md hover:bg-indigo-600 transition-colors'
           >
             Add New PDF
           </Link>
         </div>
 
         <div className='flex flex-col md:flex-row gap-4 h-[calc(100vh-8rem)]'>
-          <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
             {loading ? (
               <div className='flex justify-center items-center h-full'>
                 <LoadingSpinner />
@@ -69,7 +69,7 @@ export default function ChatPage() {
               )
             )}
           </div>
-          <div className='w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden'>
+          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
             <div className='h-full'>
               <PdfChat pdfId={params.id as string} />
             </div>
