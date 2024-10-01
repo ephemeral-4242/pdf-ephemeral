@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
+import { Home, FileText, MessageSquare } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -18,21 +19,34 @@ export default function RootLayout({
       <body className='min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-purple-100'>
         <nav className='bg-purple-600 text-white shadow-md'>
           <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
-            <Link href='/' className='text-xl font-semibold'>
-              My App
+            <Link
+              href='/'
+              className='text-xl font-semibold flex items-center space-x-2'
+            >
+              <Home className='h-6 w-6' />
+              <span>My App</span>
             </Link>
-            <div className='space-x-4'>
+            <div className='space-x-4 flex items-center'>
               <Link
                 href='/'
-                className='hover:text-purple-200 transition-colors'
+                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
               >
-                Home
+                <Home className='h-5 w-5' />
+                <span>Home</span>
               </Link>
               <Link
                 href='/pdfs'
-                className='hover:text-purple-200 transition-colors'
+                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
               >
-                View PDFs
+                <FileText className='h-5 w-5' />
+                <span>View PDFs</span>
+              </Link>
+              <Link
+                href='/library-chat'
+                className='flex items-center space-x-2 hover:text-purple-200 transition-colors'
+              >
+                <MessageSquare className='h-5 w-5' />
+                <span>Library Chat</span>
               </Link>
             </div>
           </div>

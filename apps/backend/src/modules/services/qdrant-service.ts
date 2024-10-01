@@ -13,8 +13,10 @@ export const createCollection = async (collectionName: string) => {
     );
 
     if (collectionExists) {
-      console.log(`Collection ${collectionName} already exists. Deleting...`);
-      await deleteCollection(collectionName);
+      console.log(
+        `Collection ${collectionName} already exists. Skipping creation.`,
+      );
+      return;
     }
 
     await qdrantClient.createCollection(collectionName, {
@@ -60,5 +62,15 @@ export const searchPoints = async (
     return result;
   } catch (error) {
     console.error('Error searching points:', error);
+  }
+};
+
+export const queryQdrant = async (vector: number[]): Promise<string[]> => {
+  try {
+    const searchResults = await searchPoints('pdf_collection', vector);
+    return searchResults.map((result: any) => result.payload.text);
+  } catch (error) {
+    console.error('Error querying Qdrant:', error);
+    throw new Error('Failed to query Qdrant');
   }
 };

@@ -43,6 +43,14 @@ export const api = {
         },
         body: JSON.stringify({ question, pdfId }),
       }),
+    libraryChat: (question: string) =>
+      fetchApi('/pdf/library-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }),
+      }),
   },
   contractAnalysis: {
     upload: (formData: FormData) =>

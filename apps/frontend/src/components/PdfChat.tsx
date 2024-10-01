@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -14,6 +14,15 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,13 +39,16 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     ]);
 
     try {
-      const response = await fetch('http://localhost:4000/pdf/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question: trimmedQuestion, pdfId }),
-      });
+      const response = await fetch(
+        `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ question: trimmedQuestion, pdfId }),
+        }
+      );
 
       if (!response.ok || !response.body) {
         throw new Error(`API call failed: ${response.statusText}`);
@@ -99,11 +111,12 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className='bg-white p-4 rounded-t-lg shadow-sm'
+        className='bg-white p-4 rounded-t-lg shadow-sm sticky bottom-0'
       >
         <div className='flex space-x-2'>
           <input
@@ -111,7 +124,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder='Ask a question about the PDF'
-            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+            className='flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800'
           />
           <button
             type='submit'
