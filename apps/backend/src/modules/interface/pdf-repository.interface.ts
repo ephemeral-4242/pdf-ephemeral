@@ -6,6 +6,7 @@ export interface IPDFRepository {
   getAll(): Promise<PDFDocument[]>;
   delete(id: string): Promise<void>;
   getOrCreateFolder(folderName: string): Promise<{ id: string; name: string }>;
+  getAllFolders(): Promise<any[]>;
 }
 
 export const PDF_REPOSITORY = 'PDF_REPOSITORY';

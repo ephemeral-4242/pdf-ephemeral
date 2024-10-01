@@ -44,6 +44,17 @@ export class PdfController {
     });
   }
 
+  @Get('folders')
+  async getAllFolders(@Res() res: Response) {
+    try {
+      const folders = await this.pdfService.getAllFolders();
+      res.status(200).json(folders);
+    } catch (error) {
+      console.error('Error retrieving folders:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
   @Post('chat')
   async chatWithPdf(
     @Body('question') question: string,

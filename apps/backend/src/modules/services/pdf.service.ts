@@ -94,6 +94,15 @@ export class PdfService {
     return this.pdfRepository.getAll();
   }
 
+  async getAllFolders(): Promise<any[]> {
+    try {
+      return await this.pdfRepository.getAllFolders();
+    } catch (error) {
+      this.logger.error(`Error retrieving folders: ${error.message}`);
+      throw error;
+    }
+  }
+
   resetConversation() {
     this.conversation = [
       {

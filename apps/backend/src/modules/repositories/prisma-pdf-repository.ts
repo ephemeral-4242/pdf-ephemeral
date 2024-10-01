@@ -139,4 +139,8 @@ export class PrismaPDFRepository implements IPDFRepository {
     }
     return { id: folder.id, name: folder.name };
   }
+
+  async getAllFolders(): Promise<Folder[]> {
+    return this.prisma.folder.findMany();
+  }
 }
