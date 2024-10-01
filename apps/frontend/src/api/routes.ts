@@ -6,7 +6,7 @@ export const api = {
   },
   pdf: {
     upload: async (formData: FormData, onProgress: (chunk: string) => void) => {
-      const response = await fetch('http://localhost:4000/pdf/upload', {
+      const response = await fetchApi('/pdf/upload', {
         method: 'POST',
         body: formData,
       });
