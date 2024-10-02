@@ -14,7 +14,7 @@ export default function Home() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white'>
+    <div className='min-h-screen bg-gradient-to-b text-white'>
       <div className='container mx-auto px-4 py-12'>
         {/* Header */}
         <header className='mb-12 text-center'>
@@ -80,14 +80,12 @@ interface FeatureProps {
 
 const Feature: React.FC<FeatureProps> = ({ Icon, title, description }) => {
   return (
-    <div className='flex items-start space-x-4'>
-      <div className='flex-shrink-0'>
-        <Icon className='w-8 h-8 text-primary' />
+    <div className='bg-gray-800 bg-opacity-50 rounded-lg shadow-md p-6 transform transition-transform duration-300 hover:scale-105'>
+      <div className='flex items-center mb-4'>
+        <Icon className='w-12 h-12 text-blue-500' />
+        <h3 className='text-xl font-semibold ml-4'>{title}</h3>
       </div>
-      <div>
-        <h3 className='text-xl font-semibold'>{title}</h3>
-        <p className='mt-2 text-gray-300'>{description}</p>
-      </div>
+      <p className='text-gray-300'>{description}</p>
     </div>
   );
 };

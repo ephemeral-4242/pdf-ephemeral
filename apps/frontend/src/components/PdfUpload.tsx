@@ -62,11 +62,11 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
 
   return (
     <div className='w-full max-w-md mx-auto'>
-      <form onSubmit={handleSubmit} className='space-y-6'>
+      <form onSubmit={handleSubmit} className='space-y-8'>
         {/* File Upload Area */}
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-200 ${
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 ${
             isDragActive
               ? 'border-blue-500 bg-blue-50'
               : 'border-gray-500 hover:border-blue-500 hover:bg-gray-800'
@@ -74,8 +74,8 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
         >
           <input {...getInputProps()} />
           {file ? (
-            <div className='flex items-center justify-center space-x-3'>
-              <FiFile className='text-blue-500 text-3xl' />
+            <div className='flex items-center justify-center space-x-4'>
+              <FiFile className='text-blue-500 text-4xl' />
               <span className='text-sm font-medium text-gray-200 truncate max-w-[200px]'>
                 {file.name}
               </span>
@@ -87,16 +87,16 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
                 }}
                 className='text-red-500 hover:text-red-700 transition-colors duration-200'
               >
-                <FiX className='text-xl' />
+                <FiX className='text-2xl' />
               </button>
             </div>
           ) : (
             <div>
-              <FiUploadCloud className='mx-auto text-5xl text-gray-400 mb-4' />
-              <p className='text-sm font-medium text-gray-200 mb-2'>
+              <FiUploadCloud className='mx-auto text-6xl text-gray-400 mb-6' />
+              <p className='text-lg font-medium text-gray-200 mb-2'>
                 Drag and drop your PDF here
               </p>
-              <p className='text-xs text-gray-400'>or click to select</p>
+              <p className='text-sm text-gray-400'>or click to select</p>
             </div>
           )}
         </div>
@@ -105,11 +105,11 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
         <div>
           <label
             htmlFor='folder'
-            className='block text-sm font-medium text-gray-200 mb-2'
+            className='block text-sm font-medium text-gray-200 mb-3'
           >
             Select Folder
           </label>
-          <div className='flex space-x-2'>
+          <div className='flex space-x-3'>
             <Select onValueChange={(value) => setSelectedFolder(value)}>
               <SelectTrigger id='folder' name='folder' className='w-full'>
                 <SelectValue placeholder='Choose a folder' />
@@ -131,7 +131,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
             <Button
               type='button'
               onClick={() => setShowCreateFolderModal(true)}
-              className='whitespace-nowrap'
+              className='whitespace-nowrap px-4'
             >
               Create Folder
             </Button>
@@ -142,7 +142,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
         <Button
           type='submit'
           disabled={isUploading || !file || !selectedFolder}
-          className='w-full'
+          className='w-full py-3'
         >
           {isUploading ? (
             <>
