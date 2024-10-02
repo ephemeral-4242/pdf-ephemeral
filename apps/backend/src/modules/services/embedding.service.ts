@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAI } from 'openai';
+import { IEmbeddingService } from '../interface/embedding-service.interface';
 
 @Injectable()
-export class EmbeddingService {
+export class EmbeddingService implements IEmbeddingService {
   private openai: OpenAI;
 
   constructor() {
