@@ -14,7 +14,7 @@ import { EmbeddingService } from './modules/services/embedding.service';
 import { QdrantService } from './modules/services/qdrant-service';
 import { OpenAIService } from './modules/services/openai.service';
 import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
-import { DiskService } from './modules/services/DiskService';
+import { DiskRepository } from './modules/repositories/disk-repository';
 import {
   FILE_SERVICE,
   IFileService,
@@ -38,7 +38,7 @@ import { Provider } from '@nestjs/common';
     OpenAIService,
     {
       provide: FILE_SERVICE,
-      useClass: DiskService, // Change this to S3Service to switch implementations
+      useClass: DiskRepository,
     },
     {
       provide: PDF_REPOSITORY,
