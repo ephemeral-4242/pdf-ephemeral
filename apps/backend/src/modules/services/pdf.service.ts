@@ -3,8 +3,6 @@ import * as pdf from 'pdf-parse';
 import OpenAI from 'openai';
 import { Response } from 'express';
 
-import { PDFDocument } from '../interface/pdf-document.interface';
-
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +14,7 @@ import {
   IPDFRepository,
   PDF_REPOSITORY,
 } from '../interface/pdf-repository.interface';
+import { PDFDocument } from 'src/types/pdf-document.type';
 
 @Injectable()
 export class PdfService {

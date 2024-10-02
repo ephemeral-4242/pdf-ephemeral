@@ -61,11 +61,4 @@ export const api = {
         body: JSON.stringify({ name }),
       }),
   },
-  contractAnalysis: {
-    upload: (formData: FormData) =>
-      fetchApi('/contract-analysis/upload', {
-        method: 'POST',
-        body: formData,
-      }),
-  },
 };

@@ -1,4 +1,4 @@
-export interface PDFDocument {
+export type PDFDocument = {
   id: string;
   fileName: string;
   fileSize: number;
@@ -11,4 +11,4 @@ export interface PDFDocument {
     id: string;
     name: string;
   };
-}
+};

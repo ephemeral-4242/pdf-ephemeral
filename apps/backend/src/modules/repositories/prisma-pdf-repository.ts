@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PDFDocument } from '../interface/pdf-document.interface';
+
 import { Folder, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as pdf from 'pdf-parse';
 import * as path from 'path';
 import * as fs from 'fs';
 import { IPDFRepository } from '../interface/pdf-repository.interface';
+import { PDFDocument } from 'src/types/pdf-document.type';
 
 @Injectable()
 export class PrismaPDFRepository implements IPDFRepository {
