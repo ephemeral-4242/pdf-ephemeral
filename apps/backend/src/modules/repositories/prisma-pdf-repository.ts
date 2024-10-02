@@ -1,16 +1,21 @@
-import { Injectable } from '@nestjs/common';
-
+import { Injectable, Inject } from '@nestjs/common';
 import { Folder, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as pdf from 'pdf-parse';
 import * as path from 'path';
-import * as fs from 'fs';
 import { IPDFRepository } from '../interface/pdf-repository.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
+import {
+  IFileService,
+  FILE_SERVICE,
+} from '../interface/file-service.interface';
 
 @Injectable()
 export class PrismaPDFRepository implements IPDFRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(FILE_SERVICE) private diskService: IFileService,
+  ) {}
 
   async save(
     file: Express.Multer.File,
@@ -29,13 +34,9 @@ export class PrismaPDFRepository implements IPDFRepository {
       }
     }
 
-    const filePath = path.join(folderPath, filename);
-
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, file.buffer);
+    const filePath = this.diskService.getFilePath(folderPath, filename);
+    this.diskService.createFolder(folderPath);
+    this.diskService.saveFile(filePath, file.buffer);
 
     const content = await this.extractText(file.buffer);
 
@@ -110,8 +111,8 @@ export class PrismaPDFRepository implements IPDFRepository {
 
   async delete(id: string): Promise<void> {
     const pdf = await this.prisma.pDF.findUnique({ where: { id } });
-    if (pdf && fs.existsSync(pdf.filePath)) {
-      fs.unlinkSync(pdf.filePath);
+    if (pdf) {
+      this.diskService.deleteFile(pdf.filePath);
     }
     await this.prisma.pDF.delete({ where: { id } });
   }
@@ -134,9 +135,7 @@ export class PrismaPDFRepository implements IPDFRepository {
       create: { name: folderName },
     });
     const folderPath = path.join('uploads', folderName);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
+    this.diskService.createFolder(folderPath);
     return { id: folder.id, name: folder.name };
   }
 
