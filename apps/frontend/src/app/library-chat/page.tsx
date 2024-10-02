@@ -10,6 +10,7 @@ import {
   Folder as FolderIcon,
   ChevronDown,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 
 interface PDF {
@@ -27,6 +28,7 @@ export default function LibraryChatPage() {
   const [expandedFolders, setExpandedFolders] = useState<{
     [key: string]: boolean;
   }>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -70,48 +72,92 @@ export default function LibraryChatPage() {
         <PdfChat pdfId='library' />
       </div>
 
-      {/* Sidebar on the right */}
-      <div className='w-64 bg-gray-800 p-4 overflow-y-auto'>
+      {/* Sidebar on the right with matching background color */}
+      <div className='w-80 bg-gray-900 p-4 overflow-y-auto'>
         <h2 className='text-xl font-semibold mb-4 flex items-center text-white'>
           <Book className='mr-2 h-5 w-5' /> Your Library
         </h2>
+
+        {/* Search Bar */}
+        <div className='mb-4'>
+          <div className='flex items-center bg-gray-800 rounded-lg p-2'>
+            <Search className='h-5 w-5 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className='ml-2 bg-transparent focus:outline-none text-white w-full'
+            />
+          </div>
+        </div>
+
         {isLoading ? (
           <div className='flex justify-center items-center h-32'>
             <Loader2 className='w-6 h-6 animate-spin text-white' />
           </div>
         ) : (
-          <div className='space-y-2'>
-            {Object.keys(folders).map((folderName) => (
-              <div key={folderName} className='mb-2'>
-                <div
-                  className='flex items-center cursor-pointer hover:text-blue-400 text-white'
-                  onClick={() => toggleFolder(folderName)}
-                >
-                  {expandedFolders[folderName] ? (
-                    <ChevronDown className='h-4 w-4 mr-1' />
-                  ) : (
-                    <ChevronRight className='h-4 w-4 mr-1' />
-                  )}
-                  <FolderIcon className='h-4 w-4 mr-2' />
-                  <span className='font-medium'>{folderName}</span>
-                </div>
-                {expandedFolders[folderName] && (
-                  <div className='ml-6 mt-2 space-y-1'>
-                    {folders[folderName].map((pdf) => (
-                      <div
-                        key={pdf.id}
-                        className='flex items-center p-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors duration-200 cursor-pointer'
-                      >
-                        <FileText className='h-5 w-5 text-blue-400 mr-3' />
-                        <h3 className='text-sm font-medium truncate text-white'>
-                          {pdf.fileName}
-                        </h3>
+          <div className='space-y-4'>
+            {Object.keys(folders)
+              .filter(
+                (folderName) =>
+                  folderName
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                  folders[folderName].some((pdf) =>
+                    pdf.fileName
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
+                  )
+              )
+              .map((folderName) => (
+                <div key={folderName}>
+                  {/* Folder Card */}
+                  <div
+                    className='bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-all duration-300'
+                    onClick={() => toggleFolder(folderName)}
+                  >
+                    <div className='flex items-center'>
+                      <FolderIcon className='h-5 w-5 mr-3 text-blue-400' />
+                      <span className='text-lg font-medium text-white'>
+                        {folderName}
+                      </span>
+                      <div className='ml-auto'>
+                        {expandedFolders[folderName] ? (
+                          <ChevronDown className='h-5 w-5 text-white' />
+                        ) : (
+                          <ChevronRight className='h-5 w-5 text-white' />
+                        )}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                  {/* Files inside the folder */}
+                  {expandedFolders[folderName] && (
+                    <div className='mt-2 space-y-2'>
+                      {folders[folderName]
+                        .filter((pdf) =>
+                          pdf.fileName
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())
+                        )
+                        .map((pdf) => (
+                          <div
+                            key={pdf.id}
+                            className='bg-gray-800 rounded-lg p-3 flex items-center cursor-pointer hover:bg-gray-700 transition-all duration-300'
+                          >
+                            <FileText className='h-5 w-5 text-green-400 mr-3' />
+                            <div>
+                              <h3 className='text-sm font-medium text-white'>
+                                {pdf.fileName}
+                              </h3>
+                              {/* Additional file info can be added here */}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         )}
       </div>
