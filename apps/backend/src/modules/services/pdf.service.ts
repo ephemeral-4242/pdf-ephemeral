@@ -6,7 +6,10 @@ import { Response } from 'express';
 import { splitTextIntoChunks } from 'src/utils/text-utils';
 import { v4 as uuidv4 } from 'uuid';
 
-import { EmbeddingService } from './embedding.service';
+import {
+  IEmbeddingService,
+  EMBEDDING_SERVICE,
+} from '../interface/embedding-service.interface';
 import { QdrantService } from './qdrant-service';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { OpenAIService } from './openai.service';
@@ -15,6 +18,7 @@ import {
   PDF_REPOSITORY,
 } from '../interface/pdf-repository.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
+import { AI_SERVICE, AIService } from '../interface/ai-service.interface';
 
 @Injectable()
 export class PdfService {
@@ -25,8 +29,8 @@ export class PdfService {
   constructor(
     @Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository,
     private qdrantService: QdrantService,
-    private embeddingService: EmbeddingService,
-    private openAIService: OpenAIService,
+    @Inject(EMBEDDING_SERVICE) private embeddingService: IEmbeddingService,
+    @Inject(AI_SERVICE) private openAIService: AIService,
   ) {}
 
   private conversation: ChatCompletionMessageParam[] = [];

@@ -7,13 +7,15 @@ import { HelloController } from './modules/controllers/hello.controller';
 import { PdfController } from './modules/controllers/pdf.controller';
 import { PdfService } from './modules/services/pdf.service';
 import { PrismaPDFRepository } from './modules/repositories/prisma-pdf-repository';
-
 import { PrismaService } from './modules/prisma/prisma.service';
-
 import { EmbeddingService } from './modules/services/embedding.service';
 import { QdrantService } from './modules/services/qdrant-service';
 import { OpenAIService } from './modules/services/openai.service';
 import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
+import { DiskRepository } from './modules/repositories/disk-repository';
+import { FILE_REPOSITORY } from './modules/interface/file-service.interface';
+import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interface';
+import { AI_SERVICE } from './modules/interface/ai-service.interface';
 
 @Module({
   imports: [
@@ -28,11 +30,22 @@ import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
     PdfService,
     PrismaService,
     QdrantService,
-    EmbeddingService,
-    OpenAIService,
+    {
+      provide: AI_SERVICE,
+      useClass: OpenAIService,
+    },
+
+    {
+      provide: FILE_REPOSITORY,
+      useClass: DiskRepository,
+    },
     {
       provide: PDF_REPOSITORY,
       useClass: PrismaPDFRepository,
+    },
+    {
+      provide: EMBEDDING_SERVICE,
+      useClass: EmbeddingService,
     },
   ],
 })
