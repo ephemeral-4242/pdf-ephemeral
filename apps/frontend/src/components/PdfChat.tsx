@@ -133,14 +133,14 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
         onSubmit={handleSubmit}
         className='px-6 py-4 flex bg-gray-900 items-center justify-center'
       >
-        <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-lg'>
+        <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-full px-2'>
           <textarea
             ref={textareaRef}
             value={question}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder='Ask a question about the PDF...'
-            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none ' // Changed to 'rounded-full' for fully rounded corners
             rows={1}
           />
           <button
