@@ -15,6 +15,7 @@ import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
 import { DiskRepository } from './modules/repositories/disk-repository';
 import { FILE_SERVICE } from './modules/interface/file-service.interface';
 import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interface';
+import { AI_SERVICE } from './modules/interface/ai-service.interface';
 
 @Module({
   imports: [
@@ -29,7 +30,11 @@ import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interfa
     PdfService,
     PrismaService,
     QdrantService,
-    OpenAIService,
+    {
+      provide: AI_SERVICE,
+      useClass: OpenAIService,
+    },
+
     {
       provide: FILE_SERVICE,
       useClass: DiskRepository,

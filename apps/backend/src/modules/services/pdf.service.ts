@@ -18,6 +18,7 @@ import {
   PDF_REPOSITORY,
 } from '../interface/pdf-repository.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
+import { AI_SERVICE, AIService } from '../interface/ai-service.interface';
 
 @Injectable()
 export class PdfService {
@@ -29,7 +30,7 @@ export class PdfService {
     @Inject(PDF_REPOSITORY) private pdfRepository: IPDFRepository,
     private qdrantService: QdrantService,
     @Inject(EMBEDDING_SERVICE) private embeddingService: IEmbeddingService,
-    private openAIService: OpenAIService,
+    @Inject(AI_SERVICE) private openAIService: AIService,
   ) {}
 
   private conversation: ChatCompletionMessageParam[] = [];
