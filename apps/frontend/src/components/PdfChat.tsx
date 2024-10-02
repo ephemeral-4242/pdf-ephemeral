@@ -131,32 +131,34 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
       {/* Input Area */}
       <form
         onSubmit={handleSubmit}
-        className='bg-gray-800 px-6 py-4 flex items-center'
+        className='px-6 py-4 flex bg-gray-900 items-center justify-center'
       >
-        <textarea
-          ref={textareaRef}
-          value={question}
-          onChange={handleTextareaChange}
-          onKeyDown={handleKeyDown}
-          placeholder='Ask a question about the PDF...'
-          className='flex-grow p-2 bg-gray-700 text-white rounded-lg resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
-          rows={1}
-        />
-        <button
-          type='submit'
-          disabled={isLoading || !question.trim()}
-          className={`ml-4 p-2 rounded-full ${
-            isLoading || !question.trim()
-              ? 'bg-gray-600 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
-        >
-          {isLoading ? (
-            <Loader2 className='w-6 h-6 animate-spin text-white' />
-          ) : (
-            <Send className='w-6 h-6 text-white' />
-          )}
-        </button>
+        <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-lg'>
+          <textarea
+            ref={textareaRef}
+            value={question}
+            onChange={handleTextareaChange}
+            onKeyDown={handleKeyDown}
+            placeholder='Ask a question about the PDF...'
+            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+            rows={1}
+          />
+          <button
+            type='submit'
+            disabled={isLoading || !question.trim()}
+            className={`p-2 ${
+              isLoading || !question.trim()
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } rounded-full m-2`}
+          >
+            {isLoading ? (
+              <Loader2 className='w-6 h-6 animate-spin text-white' />
+            ) : (
+              <Send className='w-6 h-6 text-white' />
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
