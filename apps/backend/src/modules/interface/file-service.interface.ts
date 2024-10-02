@@ -5,4 +5,4 @@ export interface IFileService {
   getFilePath(folderPath: string, filename: string): string;
 }
 
-export const FILE_SERVICE = 'FILE_SERVICE';
+export const FILE_REPOSITORY = 'FILE_REPOSITORY';

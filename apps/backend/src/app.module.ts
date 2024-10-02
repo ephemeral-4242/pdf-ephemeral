@@ -13,7 +13,7 @@ import { QdrantService } from './modules/services/qdrant-service';
 import { OpenAIService } from './modules/services/openai.service';
 import { PDF_REPOSITORY } from './modules/interface/pdf-repository.interface';
 import { DiskRepository } from './modules/repositories/disk-repository';
-import { FILE_SERVICE } from './modules/interface/file-service.interface';
+import { FILE_REPOSITORY } from './modules/interface/file-service.interface';
 import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interface';
 import { AI_SERVICE } from './modules/interface/ai-service.interface';
 
@@ -36,7 +36,7 @@ import { AI_SERVICE } from './modules/interface/ai-service.interface';
     },
 
     {
-      provide: FILE_SERVICE,
+      provide: FILE_REPOSITORY,
       useClass: DiskRepository,
     },
     {

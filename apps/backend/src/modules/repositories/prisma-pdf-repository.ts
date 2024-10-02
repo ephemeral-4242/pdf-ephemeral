@@ -7,14 +7,14 @@ import { IPDFRepository } from '../interface/pdf-repository.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import {
   IFileService,
-  FILE_SERVICE,
+  FILE_REPOSITORY,
 } from '../interface/file-service.interface';
 
 @Injectable()
 export class PrismaPDFRepository implements IPDFRepository {
   constructor(
     private prisma: PrismaService,
-    @Inject(FILE_SERVICE) private diskService: IFileService,
+    @Inject(FILE_REPOSITORY) private diskService: IFileService,
   ) {}
 
   async save(
