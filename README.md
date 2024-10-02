@@ -23,14 +23,7 @@ Before setting up the project, ensure you have the following installed:
 
 ## Setup Instructions
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/pdf-ephemeral.git
-cd pdf-ephemeral
-```
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 Navigate to the backend and frontend directories and install dependencies:
 
