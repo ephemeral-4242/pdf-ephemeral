@@ -64,21 +64,27 @@ export default function LibraryChatPage() {
   };
 
   return (
-    <div className='flex h-screen bg-gray-900 text-white'>
-      <div className='w-1/4 bg-gray-800 p-4 overflow-y-auto'>
-        <h2 className='text-xl font-semibold mb-4 flex items-center'>
+    <div className='flex h-full'>
+      {/* Main content area with PdfChat */}
+      <div className='flex-1 flex flex-col'>
+        <PdfChat pdfId='library' />
+      </div>
+
+      {/* Sidebar on the right */}
+      <div className='w-64 bg-gray-800 p-4 overflow-y-auto'>
+        <h2 className='text-xl font-semibold mb-4 flex items-center text-white'>
           <Book className='mr-2 h-5 w-5' /> Your Library
         </h2>
         {isLoading ? (
           <div className='flex justify-center items-center h-32'>
-            <Loader2 className='w-6 h-6 animate-spin' />
+            <Loader2 className='w-6 h-6 animate-spin text-white' />
           </div>
         ) : (
           <div className='space-y-2'>
             {Object.keys(folders).map((folderName) => (
               <div key={folderName} className='mb-2'>
                 <div
-                  className='flex items-center cursor-pointer hover:text-blue-400'
+                  className='flex items-center cursor-pointer hover:text-blue-400 text-white'
                   onClick={() => toggleFolder(folderName)}
                 >
                   {expandedFolders[folderName] ? (
@@ -94,10 +100,10 @@ export default function LibraryChatPage() {
                     {folders[folderName].map((pdf) => (
                       <div
                         key={pdf.id}
-                        className='flex items-center p-1 rounded-md hover:bg-gray-700 transition-colors duration-200 cursor-pointer'
+                        className='flex items-center p-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors duration-200 cursor-pointer'
                       >
-                        <FileText className='h-4 w-4 text-blue-400 mr-2' />
-                        <h3 className='text-sm font-medium truncate'>
+                        <FileText className='h-5 w-5 text-blue-400 mr-3' />
+                        <h3 className='text-sm font-medium truncate text-white'>
                           {pdf.fileName}
                         </h3>
                       </div>
@@ -108,17 +114,6 @@ export default function LibraryChatPage() {
             ))}
           </div>
         )}
-      </div>
-      <div className='flex-1 flex flex-col'>
-        <div className='p-6 bg-gray-800'>
-          <h1 className='text-3xl font-bold'>Library Chat</h1>
-          <p className='text-gray-400 mt-2'>
-            Ask questions about all PDFs in your library
-          </p>
-        </div>
-        <div className='flex-1 overflow-hidden'>
-          <PdfChat pdfId='library' />
-        </div>
       </div>
     </div>
   );

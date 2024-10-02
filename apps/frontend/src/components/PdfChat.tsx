@@ -41,7 +41,9 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
+        `http://localhost:4000/pdf/${
+          pdfId === 'library' ? 'library-chat' : 'chat'
+        }`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -102,49 +104,59 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   };
 
   return (
-    <div className='flex flex-col h-full bg-gray-900'>
-      <div className='flex-grow overflow-y-auto p-4 space-y-4'>
+    <div className='flex flex-col h-full'>
+      {/* Message Area */}
+      <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-900'>
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-4 rounded-lg ${
-              msg.role === 'user'
-                ? 'bg-blue-600 text-white ml-auto max-w-[80%]'
-                : 'bg-gray-800 text-gray-200 max-w-[80%]'
+            className={`flex ${
+              msg.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
           >
-            <p className='whitespace-pre-wrap'>{msg.content}</p>
+            <div
+              className={`p-4 rounded-lg max-w-xl ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-200'
+              }`}
+            >
+              <p className='whitespace-pre-wrap'>{msg.content}</p>
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className='p-4 bg-gray-800'>
-        <div className='flex items-end space-x-2'>
-          <textarea
-            ref={textareaRef}
-            value={question}
-            onChange={handleTextareaChange}
-            onKeyDown={handleKeyDown}
-            placeholder='Ask a question about the PDF...'
-            className='flex-grow p-2 bg-gray-700 text-white rounded-lg resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
-            rows={1}
-          />
-          <button
-            type='submit'
-            disabled={isLoading || !question.trim()}
-            className={`p-2 rounded-full ${
-              isLoading || !question.trim()
-                ? 'bg-gray-600 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-          >
-            {isLoading ? (
-              <Loader2 className='w-6 h-6 animate-spin' />
-            ) : (
-              <Send className='w-6 h-6' />
-            )}
-          </button>
-        </div>
+
+      {/* Input Area */}
+      <form
+        onSubmit={handleSubmit}
+        className='bg-gray-800 px-6 py-4 flex items-center'
+      >
+        <textarea
+          ref={textareaRef}
+          value={question}
+          onChange={handleTextareaChange}
+          onKeyDown={handleKeyDown}
+          placeholder='Ask a question about the PDF...'
+          className='flex-grow p-2 bg-gray-700 text-white rounded-lg resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+          rows={1}
+        />
+        <button
+          type='submit'
+          disabled={isLoading || !question.trim()}
+          className={`ml-4 p-2 rounded-full ${
+            isLoading || !question.trim()
+              ? 'bg-gray-600 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600'
+          }`}
+        >
+          {isLoading ? (
+            <Loader2 className='w-6 h-6 animate-spin text-white' />
+          ) : (
+            <Send className='w-6 h-6 text-white' />
+          )}
+        </button>
       </form>
     </div>
   );

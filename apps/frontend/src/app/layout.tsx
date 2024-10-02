@@ -17,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang='en' className='h-full'>
       <body className='h-full flex bg-background text-foreground'>
+        {/* Navigation Sidebar on the Left */}
         <nav className='fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-md overflow-y-auto'>
           <div className='p-4'>
             <Link
@@ -41,9 +42,12 @@ export default function RootLayout({
             />
           </div>
         </nav>
-        <div className='ml-64 flex-1 flex flex-col'>
-          <main className='flex-1 p-8 overflow-y-auto'>{children}</main>
+
+        {/* Main Content Area */}
+        <div className='flex-1 ml-64 flex flex-col'>
+          <main className='flex-1 overflow-y-auto'>{children}</main>
         </div>
+
         <Toaster />
       </body>
     </html>
