@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 
 export const usePdfUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
 
   const uploadPdf = async (
     file: File,
@@ -17,9 +16,7 @@ export const usePdfUpload = () => {
     formData.append('folderId', folderId);
 
     try {
-      const result = await api.pdf.upload(formData, (chunk) => {
-        setUploadProgress(chunk);
-      });
+      const result = await api.pdf.upload(formData);
 
       if (!result.url) {
         throw new Error('No URL returned from server');
@@ -32,9 +29,8 @@ export const usePdfUpload = () => {
       toast.error('Error uploading PDF');
     } finally {
       setIsUploading(false);
-      setUploadProgress('');
     }
   };
 
-  return { uploadPdf, isUploading, uploadProgress };
+  return { uploadPdf, isUploading };
 };
