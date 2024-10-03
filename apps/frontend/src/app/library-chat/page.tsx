@@ -105,8 +105,12 @@ export default function LibraryChatPage() {
           </div>
         ) : (
           <div className='space-y-4'>
-            {Object.keys(folders).map((folderName) => (
-              <div key={folderName}>
+            {Object.keys(folders).map((folderName, index) => (
+              <div
+                key={folderName}
+                className='animate-fade-in-down'
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 {/* Folder Card */}
                 <div
                   className='bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-all duration-300'
@@ -129,10 +133,11 @@ export default function LibraryChatPage() {
                 {/* Files inside the folder */}
                 {expandedFolders[folderName] && (
                   <div className='mt-2 space-y-2'>
-                    {folders[folderName].map((pdf) => (
+                    {folders[folderName].map((pdf, fileIndex) => (
                       <div
                         key={pdf.id}
-                        className='bg-gray-800 rounded-lg p-3 flex items-center cursor-pointer hover:bg-gray-700 transition-all duration-300'
+                        className='bg-gray-800 rounded-lg p-3 flex items-center cursor-pointer hover:bg-gray-700 transition-all duration-300 animate-fade-in-right'
+                        style={{ animationDelay: `${fileIndex * 50}ms` }}
                       >
                         <FileText className='h-5 w-5 text-green-400 mr-3' />
                         <div>
