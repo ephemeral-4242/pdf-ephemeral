@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import PdfChat from '@/components/PdfChat';
 
 import { api } from '@/api/routes';
-import { Book } from 'lucide-react';
 import LibraryDisplaySideDrawer from '@/components/LibraryDisplaySideDrawer';
 
 interface PDF {
@@ -21,7 +20,7 @@ export default function LibraryChatPage() {
   const [allPdfs, setAllPdfs] = useState<PDF[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pdfIdsToRender, setPdfIdsToRender] = useState<string[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const initialQuestion = searchParams.get('question') || '';
@@ -46,10 +45,10 @@ export default function LibraryChatPage() {
   const handlePdfRendering = (id: string) => {
     setPdfIdsToRender((prevIds) => {
       if (prevIds.includes(id)) {
-        // If the ID is already in the array, remove it
         return prevIds.filter((prevId) => prevId !== id);
       } else {
-        // If the ID is not in the array, add it
+        // Open the drawer when a new PDF ID is added
+        setIsDrawerOpen(true);
         return [...prevIds, id];
       }
     });
