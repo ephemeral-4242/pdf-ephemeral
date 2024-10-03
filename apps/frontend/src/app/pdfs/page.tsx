@@ -12,9 +12,11 @@ import {
   ChevronRight,
   UploadCloud,
 } from 'lucide-react';
-import CreateFolderModal from '../../components/CreateFolderModal'; // Import the modal
-import { Button } from '../../components/common/Button'; // Import the button
+import CreateFolderModal from '../../components/CreateFolderModal';
+import { Button } from '../../components/common/Button';
+import PdfUpload from '../../components/PdfUpload'; // Import PdfUpload
 import { Folder } from '@/components/PdfUpload';
+import { useRouter } from 'next/navigation';
 
 interface PDF {
   id: string;
@@ -32,8 +34,9 @@ export default function PDFsPage() {
   const [collapsedFolders, setCollapsedFolders] = useState<
     Record<string, boolean>
   >({});
-  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false); // State for modal visibility
-  const [folders, setFolders] = useState<Folder[]>([]); // State for folders
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false); // State for upload modal visibility
+  const [folders, setFolders] = useState<Folder[]>([]);
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -55,6 +58,15 @@ export default function PDFsPage() {
       ...prev,
       [folderName]: !prev[folderName],
     }));
+  };
+  const router = useRouter();
+
+  const handleUploadSuccess = (url: string) => {
+    // Handle successful upload, e.g., refresh the list of PDFs
+    console.log('Upload successful:', url);
+    setShowUploadModal(false);
+    const id = url.split('/').pop();
+    router.push(`/chat/${id}`);
   };
 
   if (isLoading) {
@@ -81,13 +93,14 @@ export default function PDFsPage() {
     <div className='container mx-auto py-12 px-6 bg-gray-900 text-gray-100'>
       <h1 className='text-3xl font-semibold mb-8'>Your PDF Library</h1>
 
-      <Button
-        type='button'
-        onClick={() => setShowCreateFolderModal(true)}
-        className='mb-8'
-      >
-        Create Folder
-      </Button>
+      <div className='flex space-x-4 mb-8'>
+        <Button type='button' onClick={() => setShowCreateFolderModal(true)}>
+          Create Folder
+        </Button>
+        <Button type='button' onClick={() => setShowUploadModal(true)}>
+          Upload PDF
+        </Button>
+      </div>
 
       {Object.keys(groupedPdfs).length === 0 ? (
         <div className='flex flex-col items-center justify-center py-16 bg-gray-800 rounded-lg'>
@@ -170,6 +183,32 @@ export default function PDFsPage() {
           setFolders((prevFolders) => [...prevFolders, newFolder])
         }
       />
+
+      {showUploadModal && (
+        <UploadModal
+          onClose={() => setShowUploadModal(false)}
+          onUploadSuccess={handleUploadSuccess}
+        />
+      )}
     </div>
   );
 }
+
+const UploadModal: React.FC<{
+  onClose: () => void;
+  onUploadSuccess: (url: string) => void;
+}> = ({ onClose, onUploadSuccess }) => {
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
+      <div className='bg-gray-800 p-6 rounded-lg shadow-lg relative'>
+        <button
+          className='absolute top-2 right-2 text-gray-500 hover:text-gray-700'
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <PdfUpload onUploadSuccess={onUploadSuccess} />
+      </div>
+    </div>
+  );
+};

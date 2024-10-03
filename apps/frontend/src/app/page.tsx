@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import PdfUpload from '../components/PdfUpload';
 import { Plus, Check, Eye, Languages } from 'lucide-react';
+import { Button } from '../components/common/Button'; // Import Button
 
 export default function Home() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function Home() {
         {/* Main Content */}
         <main className='max-w-3xl mx-auto'>
           <div className='bg-gray-800 bg-opacity-50 rounded-lg shadow-xl p-8'>
-            <PdfUpload onUploadSuccess={handleUploadSuccess} />
+            {/* Upload PDF button removed */}
           </div>
         </main>
 
