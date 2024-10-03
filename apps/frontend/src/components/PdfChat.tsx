@@ -149,9 +149,11 @@ const PdfChat: React.FC<PdfChatProps> = ({
               {index > 0 && index % 2 === 0 && (
                 <hr className='border-t border-gray-700 my-8' />
               )}
-              <div className='flex flex-col'>
+              <div
+                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : ''}`}
+              >
                 {msg.role === 'user' && (
-                  <div className='text-lg font-semibold text-white mb-2'>
+                  <div className='text-xl font-semibold text-white mb-2 max-w-[90%]'>
                     <p className='whitespace-pre-wrap'>{msg.content}</p>
                   </div>
                 )}
