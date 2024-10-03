@@ -7,10 +7,7 @@ export default function Home() {
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white'>
       <div className='w-full max-w-lg px-6 py-12 text-center'>
-        <h1
-          className='text-3xl font-light mb-8 text-gray-200 opacity-90'
-          style={{ fontFamily: 'Courier New, Courier, monospace' }}
-        >
+        <h1 className='text-3xl font-light mb-8 text-gray-200 opacity-90'>
           Chat with your library
         </h1>
         <div className='relative'>
