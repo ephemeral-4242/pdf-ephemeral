@@ -9,26 +9,35 @@ interface Message {
 
 interface PdfChatProps {
   pdfId: string;
+  initialQuestion?: string;
 }
 
-const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
+const PdfChat: React.FC<PdfChatProps> = ({ pdfId, initialQuestion = '' }) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasSubmittedInitialQuestion = useRef(false);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (initialQuestion && !hasSubmittedInitialQuestion.current) {
+      hasSubmittedInitialQuestion.current = true;
+      setQuestion(initialQuestion);
+      handleSubmit(initialQuestion);
+    }
+  }, [initialQuestion]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedQuestion = question.trim();
+  const handleSubmit = async (submittedQuestion: string) => {
+    const trimmedQuestion = submittedQuestion.trim();
     if (!trimmedQuestion) return;
 
     setIsLoading(true);
@@ -84,6 +93,11 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     }
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit(question);
+  };
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setQuestion(e.target.value);
     adjustTextareaHeight();
@@ -92,7 +106,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleFormSubmit(e);
     }
   };
 
@@ -130,7 +144,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
 
       {/* Input Area */}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleFormSubmit}
         className='px-6 py-4 flex bg-gray-900 items-center justify-center'
       >
         <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-full px-2'>

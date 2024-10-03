@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import PdfChat from '@/components/PdfChat';
 import { api } from '@/api/routes';
 import {
@@ -29,6 +30,9 @@ export default function LibraryChatPage() {
     [key: string]: boolean;
   }>({});
   const [searchQuery, setSearchQuery] = useState('');
+
+  const searchParams = useSearchParams();
+  const initialQuestion = searchParams.get('question') || '';
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -69,7 +73,7 @@ export default function LibraryChatPage() {
     <div className='flex h-full'>
       {/* Main content area with PdfChat */}
       <div className='flex-1 flex flex-col'>
-        <PdfChat pdfId='library' />
+        <PdfChat pdfId='library' initialQuestion={initialQuestion} />
       </div>
 
       {/* Sidebar on the right with matching background color */}
