@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
+import { Button } from './common/Button';
 
 interface PDF {
   id: string;
@@ -31,21 +32,25 @@ const LibraryDisplaySideDrawer: React.FC<LibraryDisplaySideDrawerProps> = ({
 }) => {
   return (
     <div
-      className={`h-full bg-gray-900 transition-all duration-300 flex ${isOpen ? 'w-64' : 'w-12'}`}
+      className={`h-full bg-gray-900 transition-all duration-300 relative ${
+        isOpen ? 'w-64' : 'w-12'
+      }`}
     >
-      <button
+      <Button
         onClick={onToggle}
-        className='h-full bg-gray-800 px-2 flex items-center'
+        variant='ghost'
+        size='icon'
+        className='absolute top-2 left-2 p-1'
       >
         {isOpen ? (
-          <ChevronRight className='text-white' />
+          <ChevronRight className='h-4 w-4' />
         ) : (
-          <ChevronLeft className='text-white' />
+          <ChevronLeft className='h-4 w-4' />
         )}
-      </button>
+      </Button>
 
       {isOpen && (
-        <div className='flex-grow p-4 overflow-y-auto'>
+        <div className='pt-12 p-4 h-full overflow-y-auto'>
           {isLoading ? (
             <div className='flex justify-center items-center h-32'>
               <Loader2 className='w-6 h-6 animate-spin text-white' />
