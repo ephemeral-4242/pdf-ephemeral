@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'pdf-info';
   content: string;
 }
 
@@ -77,12 +77,28 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId, initialQuestion = '' }) => {
         const { value, done } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        assistantReply += chunk;
 
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          newMessages[newMessages.length - 1].content = assistantReply;
-          return newMessages;
+        // Split the chunk by newlines to handle multiple messages
+        const parts = chunk.split('\n\n');
+        parts.forEach((part) => {
+          if (part.startsWith('data: pdf-detail:')) {
+            const pdfInfo = part.replace('data: pdf-detail:', '');
+            try {
+              const { name, path } = JSON.parse(pdfInfo);
+              console.log('PDF Name:', name, 'PDF Path:', path);
+            } catch (error) {
+              console.error('Error parsing PDF info:', error);
+            }
+          } else if (part.startsWith('data: ai-content:')) {
+            const aiContent = part.replace('data: ai-content:', '');
+            console.log('--- >aiContent : ', aiContent);
+            assistantReply += aiContent;
+            setMessages((prevMessages) => {
+              const newMessages = [...prevMessages];
+              newMessages[newMessages.length - 1].content = assistantReply;
+              return newMessages;
+            });
+          }
         });
       }
     } catch (error) {
@@ -132,7 +148,9 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId, initialQuestion = '' }) => {
               className={`p-4 rounded-lg max-w-xl ${
                 msg.role === 'user'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-200'
+                  : msg.role === 'assistant'
+                    ? 'bg-gray-800 text-gray-200'
+                    : 'bg-green-800 text-gray-200' // Different style for PDF info
               }`}
             >
               <p className='whitespace-pre-wrap'>{msg.content}</p>

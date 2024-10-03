@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import { Response } from 'express';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { AIService } from '../interface/ai-service.interface';
+import { PDFDocument } from 'src/types/pdf-document.type';
 
 @Injectable()
 export class OpenAIService implements AIService {
@@ -12,27 +13,42 @@ export class OpenAIService implements AIService {
   async createChatCompletionStream(
     messages: ChatCompletionMessageParam[],
     res: Response,
+    pdfDocuments?: PDFDocument[], // Change parameter to an array of PDFDocument objects
   ): Promise<string> {
     try {
+      // Set headers for Server-Sent Events (SSE)
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      // Stream the PDF documents' details and content
+      pdfDocuments.forEach((doc) => {
+        const detail = JSON.stringify({
+          name: doc.fileName,
+          path: doc.filePath,
+        });
+        res.write(`data: pdf-detail: ${detail}\n\n`);
+      });
+
+      // Create a streaming chat completion request
       const stream = await this.openai.chat.completions.create({
         model: 'gpt-4',
         stream: true,
         messages: messages,
       });
 
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      res.flushHeaders();
-
       let assistantReply = '';
 
+      // Iterate over the stream to get parts of the response
       for await (const part of stream) {
         const content = part.choices[0].delta?.content || '';
         assistantReply += content;
-        res.write(content);
+        // Write each part of the response to the client with a prefix
+        res.write(`data: ai-content:${content}\n\n`);
       }
 
+      // End the response when the stream is complete
       res.end();
 
       return assistantReply;

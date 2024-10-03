@@ -163,9 +163,16 @@ export class PdfService {
         'pdf_collection',
         queryVector,
       );
-      const retrievedContent = searchResults.map(
-        (result: any) => result.payload.text,
+
+      console.log('show searchResults docs: ', searchResults);
+
+      const pdfDocs = await Promise.all(
+        searchResults.map(async (result: any) => {
+          return await this.pdfRepository.getById(result.payload.pdfId);
+        }),
       );
+
+      const texts = searchResults.map((result: any) => result.payload.text);
 
       const messages: ChatCompletionMessageParam[] = [
         {
@@ -174,7 +181,7 @@ export class PdfService {
         },
         {
           role: 'system',
-          content: `Content retrieved from the library:\n\n${retrievedContent.join('\n\n')}`,
+          content: `Content retrieved from the library:\n\n${texts.join('\n\n')}`,
         },
         {
           role: 'user',
@@ -182,7 +189,12 @@ export class PdfService {
         },
       ];
 
-      await this.openAIService.createChatCompletionStream(messages, res);
+      console.log('show pdf docs: ', pdfDocs);
+      await this.openAIService.createChatCompletionStream(
+        messages,
+        res,
+        pdfDocs,
+      );
     } catch (error) {
       this.logger.error(`Error in chatWithLibrary: ${error.message}`);
       res.status(500).end('Internal Server Error');
