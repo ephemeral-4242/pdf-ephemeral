@@ -119,6 +119,7 @@ const PdfChat: React.FC<PdfChatProps> = ({
     }
   };
 
+  // TODO: Refactor this to be more idiomatic with the Tailwind pattern
   // Define keyframes for fade-in animation
   const fadeInStyle = `
     @keyframes fadeIn {
@@ -127,6 +128,7 @@ const PdfChat: React.FC<PdfChatProps> = ({
     }
   `;
 
+  // TODO: Refactor this to be more idiomatic with the Tailwind pattern
   // Define style for each word
   const wordStyle: React.CSSProperties = {
     opacity: 0,
@@ -140,44 +142,43 @@ const PdfChat: React.FC<PdfChatProps> = ({
       <style>{fadeInStyle}</style>
 
       {/* Message Area */}
-      <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-900'>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`p-4 rounded-lg max-w-xl ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-200'
-              }`}
-            >
-              {msg.role === 'user' ? (
-                <p className='whitespace-pre-wrap'>{msg.content}</p>
-              ) : (
-                <p className='whitespace-pre-wrap'>
-                  {(msg.content as string[]).map((word, wIndex) => (
-                    <span key={wIndex} style={wordStyle}>
-                      {word}
-                    </span>
-                  ))}
-                </p>
+      <div className='flex-1 overflow-y-auto px-4 py-4 bg-gray-900'>
+        <div className='max-w-2xl mx-auto space-y-8'>
+          {messages.map((msg, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && index % 2 === 0 && (
+                <hr className='border-t border-gray-700 my-8' />
               )}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
+              <div className='flex flex-col'>
+                {msg.role === 'user' && (
+                  <div className='text-lg font-semibold text-white mb-2'>
+                    <p className='whitespace-pre-wrap'>{msg.content}</p>
+                  </div>
+                )}
+                {msg.role === 'assistant' && (
+                  <div className='text-gray-200 text-base'>
+                    <p className='whitespace-pre-wrap'>
+                      {(msg.content as string[]).map((word, wIndex) => (
+                        <span key={wIndex} style={wordStyle}>
+                          {word}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </React.Fragment>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input Area */}
       <form
         onSubmit={handleFormSubmit}
-        className='px-6 py-4 flex bg-gray-900 items-center justify-center'
+        className='px-4 py-4 flex bg-gray-900 items-center justify-center'
       >
-        <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-full px-2'>
+        <div className='flex items-center w-full max-w-2xl mx-auto bg-gray-800 rounded-full px-2'>
           <textarea
             ref={textareaRef}
             value={question}
