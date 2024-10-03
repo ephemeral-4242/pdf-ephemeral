@@ -7,7 +7,12 @@ export default function Home() {
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white'>
       <div className='w-full max-w-lg px-6 py-12 text-center'>
-        <h1 className='text-5xl font-extrabold mb-8'>Smart PDF Vault App</h1>
+        <h1
+          className='text-3xl font-light mb-8 text-gray-200 opacity-90'
+          style={{ fontFamily: 'Courier New, Courier, monospace' }}
+        >
+          Chat with your library
+        </h1>
         <div className='relative'>
           <textarea
             className='w-full h-48 p-4 pr-16 bg-gray-800 bg-opacity-50 rounded-lg shadow-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out resize-none'
