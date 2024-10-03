@@ -33,7 +33,7 @@ const LibraryDisplaySideDrawer: React.FC<LibraryDisplaySideDrawerProps> = ({
   return (
     <div
       className={`h-full bg-gray-900 transition-all duration-300 relative ${
-        isOpen ? 'w-64' : 'w-12'
+        isOpen ? 'w-80' : 'w-12'
       }`}
     >
       <Button
