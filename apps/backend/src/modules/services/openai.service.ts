@@ -32,14 +32,6 @@ export class OpenAIService implements AIService {
       });
 
       let assistantReply = '';
-
-      // Iterate over the stream to get parts of the response
-      for await (const part of stream) {
-        const content = part.choices[0].delta?.content || '';
-        assistantReply += content;
-        // Write each part of the response to the client with a prefix
-        res.write(`data: ai-content:${content}\n\n`);
-      }
       pdfDocuments.forEach((doc) => {
         const detail = JSON.stringify({
           name: doc.fileName,
@@ -48,6 +40,13 @@ export class OpenAIService implements AIService {
         });
         res.write(`data: pdf-detail: ${detail}\n\n`);
       });
+      // Iterate over the stream to get parts of the response
+      for await (const part of stream) {
+        const content = part.choices[0].delta?.content || '';
+        assistantReply += content;
+        // Write each part of the response to the client with a prefix
+        res.write(`data: ai-content:${content}\n\n`);
+      }
 
       // End the response when the stream is complete
       res.end();
