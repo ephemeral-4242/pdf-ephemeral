@@ -56,6 +56,29 @@ export class QdrantService {
     }
   }
 
+  async saveFolderPoints(
+    collectionName: string,
+    points: any[],
+    folderId: string,
+  ) {
+    try {
+      const pointsWithFolderId = points.map((point) => ({
+        ...point,
+        payload: {
+          ...point.payload,
+          folderId,
+        },
+      }));
+
+      await this.qdrantClient.upsert(collectionName, {
+        points: pointsWithFolderId,
+      });
+      console.log('Points upserted successfully with folderId.');
+    } catch (error) {
+      console.error('Error upserting points with folderId:', error);
+    }
+  }
+
   async searchPoints(
     collectionName: string,
     vector: number[],
@@ -69,6 +92,35 @@ export class QdrantService {
       return result;
     } catch (error) {
       console.error('Error searching points:', error);
+    }
+  }
+
+  async searchPointsByFolderId(
+    collectionName: string,
+    vector: number[],
+    folderId: string,
+    limit: number = 10,
+  ) {
+    try {
+      const filter = {
+        must: [
+          {
+            key: 'folderId',
+            match: {
+              value: folderId,
+            },
+          },
+        ],
+      };
+
+      const result = await this.qdrantClient.search(collectionName, {
+        vector,
+        limit,
+        filter,
+      });
+      return result;
+    } catch (error) {
+      console.error('Error searching points by folderId:', error);
     }
   }
 

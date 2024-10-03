@@ -73,7 +73,11 @@ export class PdfService {
         }),
       );
 
-      await this.qdrantService.upsertPoints('pdf_collection', points);
+      await this.qdrantService.saveFolderPoints(
+        'pdf_collection',
+        points,
+        folderId,
+      );
 
       return pdfDocument;
     } catch (error) {
