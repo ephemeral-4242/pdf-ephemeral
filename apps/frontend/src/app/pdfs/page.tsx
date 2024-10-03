@@ -90,16 +90,25 @@ export default function PDFsPage() {
   );
 
   return (
-    <div className='container mx-auto py-12 px-6 bg-gray-900 text-gray-100'>
-      <h1 className='text-3xl font-semibold mb-8'>Your PDF Library</h1>
-
-      <div className='flex space-x-4 mb-8'>
-        <Button type='button' onClick={() => setShowCreateFolderModal(true)}>
-          Create Folder
-        </Button>
-        <Button type='button' onClick={() => setShowUploadModal(true)}>
-          Upload PDF
-        </Button>
+    <div className='container mx-auto py-8 px-4 bg-gray-900 text-gray-100'>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-semibold'>Your PDF Library</h1>
+        <div className='flex space-x-2'>
+          <button
+            className='px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md flex items-center'
+            onClick={() => setShowCreateFolderModal(true)}
+          >
+            <FolderIcon className='h-4 w-4 mr-2' />
+            New Folder
+          </button>
+          <button
+            className='px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md flex items-center'
+            onClick={() => setShowUploadModal(true)}
+          >
+            <UploadCloud className='h-4 w-4 mr-2' />
+            Upload PDF
+          </button>
+        </div>
       </div>
 
       {Object.keys(groupedPdfs).length === 0 ? (
@@ -116,60 +125,62 @@ export default function PDFsPage() {
           </Link>
         </div>
       ) : (
-        <div className='space-y-8'>
+        <div className='space-y-1'>
           {Object.entries(groupedPdfs).map(([folderName, pdfs]) => (
-            <div key={folderName}>
+            <div
+              key={folderName}
+              className='bg-gray-800 rounded overflow-hidden'
+            >
               <div
-                className='flex items-center justify-between cursor-pointer'
+                className='flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700'
                 onClick={() => toggleFolder(folderName)}
               >
                 <div className='flex items-center'>
                   {collapsedFolders[folderName] ? (
-                    <ChevronRight className='h-5 w-5 text-gray-400' />
+                    <ChevronRight className='h-4 w-4 text-gray-400' />
                   ) : (
-                    <ChevronDown className='h-5 w-5 text-gray-400' />
+                    <ChevronDown className='h-4 w-4 text-gray-400' />
                   )}
-                  <FolderIcon className='h-6 w-6 text-yellow-400 ml-2' />
-                  <h2 className='ml-3 text-lg font-medium text-gray-100'>
+                  <FolderIcon className='h-5 w-5 text-yellow-400 ml-2' />
+                  <h2 className='ml-2 text-sm font-medium text-gray-100'>
                     {folderName}
                   </h2>
                 </div>
-                <span className='text-sm text-gray-400'>
+                <span className='text-xs text-gray-400'>
                   {pdfs.length} {pdfs.length > 1 ? 'files' : 'file'}
                 </span>
               </div>
               {!collapsedFolders[folderName] && (
-                <ul className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4'>
+                <div className='border-t border-gray-700'>
                   {pdfs.map((pdf) => (
-                    <li key={pdf.id}>
-                      <div className='group relative bg-gray-800 border border-gray-700 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow'>
-                        <div className='flex items-center'>
-                          <FileText className='h-8 w-8 text-blue-400' />
-                          <div className='ml-3'>
-                            <p className='text-sm font-medium text-gray-100'>
-                              {pdf.fileName}
-                            </p>
-                            <p className='text-xs text-gray-400'>
-                              {new Date(pdf.uploadDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                          <div className='flex space-x-2'>
-                            <Link href={`/chat/${pdf.id}`} passHref>
-                              <button className='p-1 rounded-full text-gray-400 hover:bg-gray-700'>
-                                <MessageSquare className='h-5 w-5' />
-                              </button>
-                            </Link>
-                            <button className='p-1 rounded-full text-gray-400 hover:bg-gray-700'>
-                              <MoreVertical className='h-5 w-5' />
-                            </button>
-                          </div>
+                    <div
+                      key={pdf.id}
+                      className='flex items-center justify-between py-2 px-4 hover:bg-gray-700'
+                    >
+                      <div className='flex items-center'>
+                        <FileText className='h-4 w-4 text-blue-400' />
+                        <div className='ml-2'>
+                          <p className='text-sm font-medium text-gray-100'>
+                            {pdf.fileName}
+                          </p>
+                          <p className='text-xs text-gray-400'>
+                            {new Date(pdf.uploadDate).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
-                    </li>
+                      <div className='flex space-x-2'>
+                        <Link href={`/chat/${pdf.id}`} passHref>
+                          <button className='p-1 rounded-full text-gray-400 hover:bg-gray-600'>
+                            <MessageSquare className='h-4 w-4' />
+                          </button>
+                        </Link>
+                        <button className='p-1 rounded-full text-gray-400 hover:bg-gray-600'>
+                          <MoreVertical className='h-4 w-4' />
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           ))}
