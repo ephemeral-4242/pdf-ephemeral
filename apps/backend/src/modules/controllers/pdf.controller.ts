@@ -146,4 +146,32 @@ export class PdfController {
       }
     }
   }
+
+  @Post('folder-chat')
+  async chatWithFolder(
+    @Body('question') question: string,
+    @Body('folderId') folderId: string,
+    @Res() res: Response,
+  ) {
+    if (!question || !folderId) {
+      return res
+        .status(400)
+        .json({ error: 'Question and Folder ID are required' });
+    }
+    try {
+      await this.pdfService.chatWithFolder(question, folderId, res);
+      // The response is handled within the service method, so we don't need to do anything here
+    } catch (error) {
+      console.error('Error chatting with folder:', error);
+      if (!res.headersSent) {
+        if (error instanceof RateLimitError) {
+          res
+            .status(429)
+            .json({ error: 'Rate limit exceeded. Please try again later.' });
+        } else {
+          res.status(500).json({ error: 'Internal Server Error' });
+        }
+      }
+    }
+  }
 }

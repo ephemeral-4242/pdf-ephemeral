@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
+import { useChunkReceiver } from '../hooks/useChunkReceiver';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -9,31 +10,65 @@ interface Message {
 
 interface PdfChatProps {
   pdfId: string;
+  initialQuestion?: string;
+  onPdfChunkReceived?: (id: string) => void;
 }
 
-const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
+const PdfChat: React.FC<PdfChatProps> = ({
+  pdfId,
+  initialQuestion = '',
+  onPdfChunkReceived,
+}) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasSubmittedInitialQuestion = useRef(false);
+
+  const { processChunk } = useChunkReceiver({
+    onPdfChunkReceived,
+    onAiContent: (content) => {
+      setMessages((prev) => {
+        const lastMessage = prev.at(-1);
+        if (lastMessage?.role === 'assistant') {
+          // Append to the last message if it's from the assistant
+          const updatedLastMessage = {
+            ...lastMessage,
+            content: lastMessage.content + content,
+          };
+          return [...prev.slice(0, -1), updatedLastMessage];
+        } else {
+          // Add a new message if the last one isn't from the assistant
+          return [...prev, { role: 'assistant', content }];
+        }
+      });
+    },
+    onError: (message) => toast.error(`An error occurred: ${message}`),
+  });
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (initialQuestion && !hasSubmittedInitialQuestion.current) {
+      hasSubmittedInitialQuestion.current = true;
+      setQuestion(initialQuestion);
+      handleSubmit(initialQuestion);
+    }
+  }, [initialQuestion]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedQuestion = question.trim();
+  const handleSubmit = async (submittedQuestion: string) => {
+    const trimmedQuestion = submittedQuestion.trim();
     if (!trimmedQuestion) return;
 
     setIsLoading(true);
     setQuestion('');
-
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: 'user', content: trimmedQuestion },
@@ -41,9 +76,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/pdf/${
-          pdfId === 'library' ? 'library-chat' : 'chat'
-        }`,
+        `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -51,30 +84,24 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
         }
       );
 
-      if (!response.ok || !response.body) {
+      if (!response.ok) {
         throw new Error(`API call failed: ${response.statusText}`);
       }
 
-      const reader = response.body.getReader();
+      const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      let assistantReply = '';
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: 'assistant', content: '' },
-      ]);
+      if (!reader) {
+        throw new Error('Failed to get response reader');
+      }
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value);
-        assistantReply += chunk;
 
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          newMessages[newMessages.length - 1].content = assistantReply;
-          return newMessages;
-        });
+        const chunk = decoder.decode(value);
+        console.log('show chunk: ', chunk);
+        processChunk(chunk);
       }
     } catch (error) {
       console.error('Error chatting with PDF:', error);
@@ -82,6 +109,11 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit(question);
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -92,7 +124,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleFormSubmit(e);
     }
   };
 
@@ -130,7 +162,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
 
       {/* Input Area */}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleFormSubmit}
         className='px-6 py-4 flex bg-gray-900 items-center justify-center'
       >
         <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-full px-2'>
@@ -140,7 +172,7 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId }) => {
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder='Ask a question about the PDF...'
-            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none ' // Changed to 'rounded-full' for fully rounded corners
+            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none'
             rows={1}
           />
           <button

@@ -45,17 +45,13 @@ export default function ChatPage() {
             <li className='breadcrumb-item active' aria-current='page'></li>
           </ol>
         </nav>
-        <div className='flex justify-between items-center mb-4 bg-gray-800 p-4 rounded-lg shadow-md'>
-          <h1 className='text-2xl font-bold text-foreground'>PDF Chat</h1>
-          <Link
-            href='/'
-            className='px-4 py-2 bg-primary text-white rounded-md hover:bg-indigo-600 transition-colors'
-          >
-            Add New PDF
-          </Link>
-        </div>
 
-        <div className='flex flex-col md:flex-row gap-4 h-[calc(100vh-8rem)]'>
+        <div className='flex flex-col md:flex-row gap-4 h-[calc(109vh-8rem)]'>
+          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
+            <div className='h-full'>
+              <PdfChat pdfId={params.id as string} />
+            </div>
+          </div>
           <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
             {loading ? (
               <div className='flex justify-center items-center h-full'>
@@ -72,11 +68,6 @@ export default function ChatPage() {
                 </div>
               )
             )}
-          </div>
-          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
-            <div className='h-full'>
-              <PdfChat pdfId={params.id as string} />
-            </div>
           </div>
         </div>
       </div>

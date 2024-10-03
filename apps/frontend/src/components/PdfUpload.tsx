@@ -11,7 +11,6 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/common/Select';
-import CreateFolderModal from './CreateFolderModal';
 
 export interface Folder {
   id: string;
@@ -26,7 +25,6 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const { uploadPdf, isUploading } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -128,13 +126,6 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
                 )}
               </SelectContent>
             </Select>
-            <Button
-              type='button'
-              onClick={() => setShowCreateFolderModal(true)}
-              className='whitespace-nowrap px-4'
-            >
-              Create Folder
-            </Button>
           </div>
         </div>
 
@@ -173,15 +164,6 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
           )}
         </Button>
       </form>
-
-      {/* Create Folder Modal */}
-      <CreateFolderModal
-        show={showCreateFolderModal}
-        onClose={() => setShowCreateFolderModal(false)}
-        onCreate={(newFolder: Folder) =>
-          setFolders((prevFolders) => [...prevFolders, newFolder])
-        }
-      />
     </div>
   );
 };

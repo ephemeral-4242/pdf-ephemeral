@@ -73,7 +73,11 @@ export class PdfService {
         }),
       );
 
-      await this.qdrantService.upsertPoints('pdf_collection', points);
+      await this.qdrantService.saveFolderPoints(
+        'pdf_collection',
+        points,
+        folderId,
+      );
 
       return pdfDocument;
     } catch (error) {
@@ -154,8 +158,19 @@ export class PdfService {
     try {
       const queryVector =
         await this.embeddingService.generateEmbedding(question);
-      const retrievedContent =
-        await this.qdrantService.queryQdrant(queryVector);
+
+      const searchResults = await this.qdrantService.searchPoints(
+        'pdf_collection',
+        queryVector,
+      );
+
+      const pdfDocs = await Promise.all(
+        searchResults.map(async (result: any) => {
+          return await this.pdfRepository.getById(result.payload.pdfId);
+        }),
+      );
+
+      const texts = searchResults.map((result: any) => result.payload.text);
 
       const messages: ChatCompletionMessageParam[] = [
         {
@@ -164,7 +179,51 @@ export class PdfService {
         },
         {
           role: 'system',
-          content: `Content retrieved from the library:\n\n${retrievedContent.join('\n\n')}`,
+          content: `Content retrieved from the library:\n\n${texts.join('\n\n')}`,
+        },
+        {
+          role: 'user',
+          content: `Question: ${question}`,
+        },
+      ];
+
+      await this.openAIService.createChatCompletionStream(
+        messages,
+        res,
+        pdfDocs,
+      );
+    } catch (error) {
+      this.logger.error(`Error in chatWithLibrary: ${error.message}`);
+      res.status(500).end('Internal Server Error');
+    }
+  }
+
+  async chatWithFolder(
+    question: string,
+    folderId: string,
+    res: Response,
+  ): Promise<void> {
+    try {
+      const queryVector =
+        await this.embeddingService.generateEmbedding(question);
+
+      const searchResults = await this.qdrantService.searchPointsByFolderId(
+        'pdf_collection',
+        queryVector,
+        folderId,
+      );
+      const retrievedContent = searchResults.map(
+        (result: any) => result.payload.text,
+      );
+
+      const messages: ChatCompletionMessageParam[] = [
+        {
+          role: 'system',
+          content: `You are an AI assistant that answers questions based on the provided content. Use the provided content to answer the user's question as accurately as possible.`,
+        },
+        {
+          role: 'system',
+          content: `Content retrieved from the folder:\n\n${retrievedContent.join('\n\n')}`,
         },
         {
           role: 'user',
@@ -174,7 +233,7 @@ export class PdfService {
 
       await this.openAIService.createChatCompletionStream(messages, res);
     } catch (error) {
-      this.logger.error(`Error in chatWithLibrary: ${error.message}`);
+      this.logger.error(`Error in chatWithFolder: ${error.message}`);
       res.status(500).end('Internal Server Error');
     }
   }

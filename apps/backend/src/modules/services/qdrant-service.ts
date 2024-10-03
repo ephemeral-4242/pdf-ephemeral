@@ -56,6 +56,29 @@ export class QdrantService {
     }
   }
 
+  async saveFolderPoints(
+    collectionName: string,
+    points: any[],
+    folderId: string,
+  ) {
+    try {
+      const pointsWithFolderId = points.map((point) => ({
+        ...point,
+        payload: {
+          ...point.payload,
+          folderId,
+        },
+      }));
+
+      await this.qdrantClient.upsert(collectionName, {
+        points: pointsWithFolderId,
+      });
+      console.log('Points upserted successfully with folderId.');
+    } catch (error) {
+      console.error('Error upserting points with folderId:', error);
+    }
+  }
+
   async searchPoints(
     collectionName: string,
     vector: number[],
@@ -72,13 +95,32 @@ export class QdrantService {
     }
   }
 
-  async queryQdrant(vector: number[]): Promise<string[]> {
+  async searchPointsByFolderId(
+    collectionName: string,
+    vector: number[],
+    folderId: string,
+    limit: number = 10,
+  ) {
     try {
-      const searchResults = await this.searchPoints('pdf_collection', vector);
-      return searchResults.map((result: any) => result.payload.text);
+      const filter = {
+        must: [
+          {
+            key: 'folderId',
+            match: {
+              value: folderId,
+            },
+          },
+        ],
+      };
+
+      const result = await this.qdrantClient.search(collectionName, {
+        vector,
+        limit,
+        filter,
+      });
+      return result;
     } catch (error) {
-      console.error('Error querying Qdrant:', error);
-      throw new Error('Failed to query Qdrant');
+      console.error('Error searching points by folderId:', error);
     }
   }
 }
