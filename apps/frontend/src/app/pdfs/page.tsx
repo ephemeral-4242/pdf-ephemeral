@@ -12,6 +12,9 @@ import {
   ChevronRight,
   UploadCloud,
 } from 'lucide-react';
+import CreateFolderModal from '../../components/CreateFolderModal'; // Import the modal
+import { Button } from '../../components/common/Button'; // Import the button
+import { Folder } from '@/components/PdfUpload';
 
 interface PDF {
   id: string;
@@ -29,6 +32,8 @@ export default function PDFsPage() {
   const [collapsedFolders, setCollapsedFolders] = useState<
     Record<string, boolean>
   >({});
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false); // State for modal visibility
+  const [folders, setFolders] = useState<Folder[]>([]); // State for folders
 
   useEffect(() => {
     const fetchPdfs = async () => {
@@ -75,6 +80,14 @@ export default function PDFsPage() {
   return (
     <div className='container mx-auto py-12 px-6 bg-gray-900 text-gray-100'>
       <h1 className='text-3xl font-semibold mb-8'>Your PDF Library</h1>
+
+      <Button
+        type='button'
+        onClick={() => setShowCreateFolderModal(true)}
+        className='mb-8'
+      >
+        Create Folder
+      </Button>
 
       {Object.keys(groupedPdfs).length === 0 ? (
         <div className='flex flex-col items-center justify-center py-16 bg-gray-800 rounded-lg'>
@@ -149,6 +162,14 @@ export default function PDFsPage() {
           ))}
         </div>
       )}
+
+      <CreateFolderModal
+        show={showCreateFolderModal}
+        onClose={() => setShowCreateFolderModal(false)}
+        onCreate={(newFolder: Folder) =>
+          setFolders((prevFolders) => [...prevFolders, newFolder])
+        }
+      />
     </div>
   );
 }
