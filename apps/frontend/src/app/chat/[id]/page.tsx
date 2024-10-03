@@ -57,6 +57,11 @@ export default function ChatPage() {
 
         <div className='flex flex-col md:flex-row gap-4 h-[calc(100vh-8rem)]'>
           <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
+            <div className='h-full'>
+              <PdfChat pdfId={params.id as string} />
+            </div>
+          </div>
+          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
             {loading ? (
               <div className='flex justify-center items-center h-full'>
                 <LoadingSpinner />
@@ -72,11 +77,6 @@ export default function ChatPage() {
                 </div>
               )
             )}
-          </div>
-          <div className='w-full md:w-1/2 bg-gray-800 rounded-lg shadow-md overflow-hidden'>
-            <div className='h-full'>
-              <PdfChat pdfId={params.id as string} />
-            </div>
           </div>
         </div>
       </div>
