@@ -158,8 +158,14 @@ export class PdfService {
     try {
       const queryVector =
         await this.embeddingService.generateEmbedding(question);
-      const retrievedContent =
-        await this.qdrantService.queryQdrant(queryVector);
+
+      const searchResults = await this.qdrantService.searchPoints(
+        'pdf_collection',
+        queryVector,
+      );
+      const retrievedContent = searchResults.map(
+        (result: any) => result.payload.text,
+      );
 
       const messages: ChatCompletionMessageParam[] = [
         {
