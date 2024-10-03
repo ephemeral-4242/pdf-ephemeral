@@ -189,6 +189,46 @@ export class PdfService {
     }
   }
 
+  async chatWithFolder(
+    question: string,
+    folderId: string,
+    res: Response,
+  ): Promise<void> {
+    try {
+      const queryVector =
+        await this.embeddingService.generateEmbedding(question);
+
+      const searchResults = await this.qdrantService.searchPointsByFolderId(
+        'pdf_collection',
+        queryVector,
+        folderId,
+      );
+      const retrievedContent = searchResults.map(
+        (result: any) => result.payload.text,
+      );
+
+      const messages: ChatCompletionMessageParam[] = [
+        {
+          role: 'system',
+          content: `You are an AI assistant that answers questions based on the provided content. Use the provided content to answer the user's question as accurately as possible.`,
+        },
+        {
+          role: 'system',
+          content: `Content retrieved from the folder:\n\n${retrievedContent.join('\n\n')}`,
+        },
+        {
+          role: 'user',
+          content: `Question: ${question}`,
+        },
+      ];
+
+      await this.openAIService.createChatCompletionStream(messages, res);
+    } catch (error) {
+      this.logger.error(`Error in chatWithFolder: ${error.message}`);
+      res.status(500).end('Internal Server Error');
+    }
+  }
+
   async createFolder(name: string): Promise<{ id: string; name: string }> {
     try {
       return await this.pdfRepository.getOrCreateFolder(name);
