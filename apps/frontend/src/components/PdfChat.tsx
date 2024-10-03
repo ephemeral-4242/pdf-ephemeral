@@ -10,9 +10,14 @@ interface Message {
 interface PdfChatProps {
   pdfId: string;
   initialQuestion?: string;
+  onPdfChunkReceived?: (id: string) => void;
 }
 
-const PdfChat: React.FC<PdfChatProps> = ({ pdfId, initialQuestion = '' }) => {
+const PdfChat: React.FC<PdfChatProps> = ({
+  pdfId,
+  initialQuestion = '',
+  onPdfChunkReceived,
+}) => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,14 +89,14 @@ const PdfChat: React.FC<PdfChatProps> = ({ pdfId, initialQuestion = '' }) => {
           if (part.startsWith('data: pdf-detail:')) {
             const pdfInfo = part.replace('data: pdf-detail:', '');
             try {
-              const { name, path } = JSON.parse(pdfInfo);
+              const { name, path, id } = JSON.parse(pdfInfo);
+              onPdfChunkReceived?.(id);
               console.log('PDF Name:', name, 'PDF Path:', path);
             } catch (error) {
               console.error('Error parsing PDF info:', error);
             }
           } else if (part.startsWith('data: ai-content:')) {
             const aiContent = part.replace('data: ai-content:', '');
-            console.log('--- >aiContent : ', aiContent);
             assistantReply += aiContent;
             setMessages((prevMessages) => {
               const newMessages = [...prevMessages];

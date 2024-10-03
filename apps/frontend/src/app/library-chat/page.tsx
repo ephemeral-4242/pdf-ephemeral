@@ -11,7 +11,6 @@ import {
   Folder as FolderIcon,
   ChevronDown,
   ChevronRight,
-  Search,
 } from 'lucide-react';
 
 interface PDF {
@@ -29,7 +28,7 @@ export default function LibraryChatPage() {
   const [expandedFolders, setExpandedFolders] = useState<{
     [key: string]: boolean;
   }>({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [pdfIdsToRender, setPdfIdsToRender] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
   const initialQuestion = searchParams.get('question') || '';
@@ -52,11 +51,13 @@ export default function LibraryChatPage() {
   // Group PDFs by folders
   const folders = pdfs.reduce(
     (acc, pdf) => {
-      const folderName = pdf.folder?.name || 'Uncategorized';
-      if (!acc[folderName]) {
-        acc[folderName] = [];
+      if (pdfIdsToRender.includes(pdf.id)) {
+        const folderName = pdf.folder?.name || 'Uncategorized';
+        if (!acc[folderName]) {
+          acc[folderName] = [];
+        }
+        acc[folderName].push(pdf);
       }
-      acc[folderName].push(pdf);
       return acc;
     },
     {} as { [key: string]: PDF[] }
@@ -69,11 +70,27 @@ export default function LibraryChatPage() {
     }));
   };
 
+  const handlePdfRendering = (id: string) => {
+    setPdfIdsToRender((prevIds) => {
+      if (prevIds.includes(id)) {
+        // If the ID is already in the array, remove it
+        return prevIds.filter((prevId) => prevId !== id);
+      } else {
+        // If the ID is not in the array, add it
+        return [...prevIds, id];
+      }
+    });
+  };
+
   return (
     <div className='flex h-full'>
       {/* Main content area with PdfChat */}
       <div className='flex-1 flex flex-col'>
-        <PdfChat pdfId='library' initialQuestion={initialQuestion} />
+        <PdfChat
+          pdfId='library'
+          initialQuestion={initialQuestion}
+          onPdfChunkReceived={handlePdfRendering}
+        />
       </div>
 
       {/* Sidebar on the right with matching background color */}
@@ -82,86 +99,54 @@ export default function LibraryChatPage() {
           <Book className='mr-2 h-5 w-5' /> Your Library
         </h2>
 
-        {/* Search Bar */}
-        <div className='mb-4'>
-          <div className='flex items-center bg-gray-800 rounded-lg p-2'>
-            <Search className='h-5 w-5 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className='ml-2 bg-transparent focus:outline-none text-white w-full'
-            />
-          </div>
-        </div>
-
         {isLoading ? (
           <div className='flex justify-center items-center h-32'>
             <Loader2 className='w-6 h-6 animate-spin text-white' />
           </div>
         ) : (
           <div className='space-y-4'>
-            {Object.keys(folders)
-              .filter(
-                (folderName) =>
-                  folderName
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()) ||
-                  folders[folderName].some((pdf) =>
-                    pdf.fileName
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
-                  )
-              )
-              .map((folderName) => (
-                <div key={folderName}>
-                  {/* Folder Card */}
-                  <div
-                    className='bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-all duration-300'
-                    onClick={() => toggleFolder(folderName)}
-                  >
-                    <div className='flex items-center'>
-                      <FolderIcon className='h-5 w-5 mr-3 text-blue-400' />
-                      <span className='text-lg font-medium text-white'>
-                        {folderName}
-                      </span>
-                      <div className='ml-auto'>
-                        {expandedFolders[folderName] ? (
-                          <ChevronDown className='h-5 w-5 text-white' />
-                        ) : (
-                          <ChevronRight className='h-5 w-5 text-white' />
-                        )}
-                      </div>
+            {Object.keys(folders).map((folderName) => (
+              <div key={folderName}>
+                {/* Folder Card */}
+                <div
+                  className='bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-all duration-300'
+                  onClick={() => toggleFolder(folderName)}
+                >
+                  <div className='flex items-center'>
+                    <FolderIcon className='h-5 w-5 mr-3 text-blue-400' />
+                    <span className='text-lg font-medium text-white'>
+                      {folderName}
+                    </span>
+                    <div className='ml-auto'>
+                      {expandedFolders[folderName] ? (
+                        <ChevronDown className='h-5 w-5 text-white' />
+                      ) : (
+                        <ChevronRight className='h-5 w-5 text-white' />
+                      )}
                     </div>
                   </div>
-                  {/* Files inside the folder */}
-                  {expandedFolders[folderName] && (
-                    <div className='mt-2 space-y-2'>
-                      {folders[folderName]
-                        .filter((pdf) =>
-                          pdf.fileName
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
-                        )
-                        .map((pdf) => (
-                          <div
-                            key={pdf.id}
-                            className='bg-gray-800 rounded-lg p-3 flex items-center cursor-pointer hover:bg-gray-700 transition-all duration-300'
-                          >
-                            <FileText className='h-5 w-5 text-green-400 mr-3' />
-                            <div>
-                              <h3 className='text-sm font-medium text-white'>
-                                {pdf.fileName}
-                              </h3>
-                              {/* Additional file info can be added here */}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
                 </div>
-              ))}
+                {/* Files inside the folder */}
+                {expandedFolders[folderName] && (
+                  <div className='mt-2 space-y-2'>
+                    {folders[folderName].map((pdf) => (
+                      <div
+                        key={pdf.id}
+                        className='bg-gray-800 rounded-lg p-3 flex items-center cursor-pointer hover:bg-gray-700 transition-all duration-300'
+                      >
+                        <FileText className='h-5 w-5 text-green-400 mr-3' />
+                        <div>
+                          <h3 className='text-sm font-medium text-white'>
+                            {pdf.fileName}
+                          </h3>
+                          {/* Additional file info can be added here */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

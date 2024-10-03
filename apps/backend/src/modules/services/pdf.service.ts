@@ -164,8 +164,6 @@ export class PdfService {
         queryVector,
       );
 
-      console.log('show searchResults docs: ', searchResults);
-
       const pdfDocs = await Promise.all(
         searchResults.map(async (result: any) => {
           return await this.pdfRepository.getById(result.payload.pdfId);
@@ -189,7 +187,6 @@ export class PdfService {
         },
       ];
 
-      console.log('show pdf docs: ', pdfDocs);
       await this.openAIService.createChatCompletionStream(
         messages,
         res,

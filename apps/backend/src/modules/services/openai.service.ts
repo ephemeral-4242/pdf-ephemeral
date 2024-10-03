@@ -27,6 +27,7 @@ export class OpenAIService implements AIService {
         const detail = JSON.stringify({
           name: doc.fileName,
           path: doc.filePath,
+          id: doc.id,
         });
         res.write(`data: pdf-detail: ${detail}\n\n`);
       });
