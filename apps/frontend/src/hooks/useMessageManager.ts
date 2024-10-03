@@ -52,9 +52,23 @@ export function useMessageManager() {
     });
   };
 
+  const flushBuffer = () => {
+    if (bufferRef.current) {
+      const tokens = splitIntoTokens(bufferRef.current);
+      bufferRef.current = '';
+      appendCompleteTokens(tokens);
+    }
+  };
+
+  const resetBuffer = () => {
+    bufferRef.current = '';
+  };
+
   return {
     messages,
     setMessages,
     processIncomingChunk,
+    resetBuffer,
+    flushBuffer,
   };
 }

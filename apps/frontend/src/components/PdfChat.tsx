@@ -22,9 +22,15 @@ const PdfChat: React.FC<PdfChatProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSubmittedInitialQuestion = useRef(false);
 
-  const { messages, setMessages, processIncomingChunk } = useMessageManager();
+  // Include flushBuffer here
+  const {
+    messages,
+    setMessages,
+    processIncomingChunk,
+    resetBuffer,
+    flushBuffer,
+  } = useMessageManager();
 
-  // Handler for processing incoming chunks
   const { processChunk } = useChunkReceiver({
     onPdfChunkReceived,
     onAiContent: processIncomingChunk,
@@ -58,6 +64,8 @@ const PdfChat: React.FC<PdfChatProps> = ({
       { role: 'user', content: trimmedQuestion },
     ]);
 
+    resetBuffer();
+
     try {
       const response = await fetch(
         `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
@@ -87,6 +95,8 @@ const PdfChat: React.FC<PdfChatProps> = ({
 
         processChunk(chunk);
       }
+
+      flushBuffer();
     } catch (error: any) {
       console.error('Error chatting with PDF:', error);
       toast.error(`An error occurred: ${error.message || error}`);
