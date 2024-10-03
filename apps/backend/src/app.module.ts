@@ -16,6 +16,7 @@ import { DiskRepository } from './modules/repositories/disk-repository';
 import { FILE_REPOSITORY } from './modules/interface/file-service.interface';
 import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interface';
 import { AI_SERVICE } from './modules/interface/ai-service.interface';
+import { ChunkStreamingService } from './modules/services/chunk-streaming.service';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AI_SERVICE } from './modules/interface/ai-service.interface';
     PdfService,
     PrismaService,
     QdrantService,
+    ChunkStreamingService,
     {
       provide: AI_SERVICE,
       useClass: OpenAIService,

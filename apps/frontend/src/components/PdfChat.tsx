@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
 
 interface Message {
-  role: 'user' | 'assistant' | 'pdf-info';
+  role: 'user' | 'assistant';
   content: string;
 }
 
@@ -47,7 +47,6 @@ const PdfChat: React.FC<PdfChatProps> = ({
 
     setIsLoading(true);
     setQuestion('');
-
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: 'user', content: trimmedQuestion },
@@ -55,9 +54,7 @@ const PdfChat: React.FC<PdfChatProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:4000/pdf/${
-          pdfId === 'library' ? 'library-chat' : 'chat'
-        }`,
+        `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -65,46 +62,56 @@ const PdfChat: React.FC<PdfChatProps> = ({
         }
       );
 
-      if (!response.ok || !response.body) {
+      if (!response.ok) {
         throw new Error(`API call failed: ${response.statusText}`);
       }
 
-      const reader = response.body.getReader();
+      const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      let assistantReply = '';
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: 'assistant', content: '' },
-      ]);
+      if (!reader) {
+        throw new Error('Failed to get response reader');
+      }
+
+      let assistantReply = '';
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value);
 
-        // Split the chunk by newlines to handle multiple messages
-        const parts = chunk.split('\n\n');
-        parts.forEach((part) => {
-          if (part.startsWith('data: pdf-detail:')) {
-            const pdfInfo = part.replace('data: pdf-detail:', '');
-            try {
-              const { name, path, id } = JSON.parse(pdfInfo);
-              onPdfChunkReceived?.(id);
-              console.log('PDF Name:', name, 'PDF Path:', path);
-            } catch (error) {
-              console.error('Error parsing PDF info:', error);
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(5));
+
+            switch (data.type) {
+              case 'pdf-detail':
+                onPdfChunkReceived?.(data.id);
+                break;
+              case 'ai-content':
+                assistantReply += data.content;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  if (lastMessage.role === 'assistant') {
+                    lastMessage.content = assistantReply;
+                  } else {
+                    newMessages.push({
+                      role: 'assistant',
+                      content: assistantReply,
+                    });
+                  }
+                  return newMessages;
+                });
+                break;
+              case 'error':
+                toast.error(`An error occurred: ${data.message}`);
+                break;
             }
-          } else if (part.startsWith('data: ai-content:')) {
-            const aiContent = part.replace('data: ai-content:', '');
-            assistantReply += aiContent;
-            setMessages((prevMessages) => {
-              const newMessages = [...prevMessages];
-              newMessages[newMessages.length - 1].content = assistantReply;
-              return newMessages;
-            });
           }
-        });
+        }
       }
     } catch (error) {
       console.error('Error chatting with PDF:', error);
@@ -153,9 +160,7 @@ const PdfChat: React.FC<PdfChatProps> = ({
               className={`p-4 rounded-lg max-w-xl ${
                 msg.role === 'user'
                   ? 'bg-blue-600 text-white'
-                  : msg.role === 'assistant'
-                    ? 'bg-gray-800 text-gray-200'
-                    : 'bg-green-800 text-gray-200' // Different style for PDF info
+                  : 'bg-gray-800 text-gray-200'
               }`}
             >
               <p className='whitespace-pre-wrap'>{msg.content}</p>
@@ -177,7 +182,7 @@ const PdfChat: React.FC<PdfChatProps> = ({
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder='Ask a question about the PDF...'
-            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none ' // Changed to 'rounded-full' for fully rounded corners
+            className='flex-grow p-3 bg-transparent text-white resize-none overflow-hidden focus:outline-none'
             rows={1}
           />
           <button
