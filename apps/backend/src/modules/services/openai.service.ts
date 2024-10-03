@@ -23,14 +23,6 @@ export class OpenAIService implements AIService {
       res.flushHeaders();
 
       // Stream the PDF documents' details and content
-      pdfDocuments.forEach((doc) => {
-        const detail = JSON.stringify({
-          name: doc.fileName,
-          path: doc.filePath,
-          id: doc.id,
-        });
-        res.write(`data: pdf-detail: ${detail}\n\n`);
-      });
 
       // Create a streaming chat completion request
       const stream = await this.openai.chat.completions.create({
@@ -48,6 +40,14 @@ export class OpenAIService implements AIService {
         // Write each part of the response to the client with a prefix
         res.write(`data: ai-content:${content}\n\n`);
       }
+      pdfDocuments.forEach((doc) => {
+        const detail = JSON.stringify({
+          name: doc.fileName,
+          path: doc.filePath,
+          id: doc.id,
+        });
+        res.write(`data: pdf-detail: ${detail}\n\n`);
+      });
 
       // End the response when the stream is complete
       res.end();
