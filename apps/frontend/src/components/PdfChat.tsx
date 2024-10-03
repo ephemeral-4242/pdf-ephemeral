@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
+import { useChunkReceiver } from '../hooks/useChunkReceiver';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -24,6 +25,27 @@ const PdfChat: React.FC<PdfChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSubmittedInitialQuestion = useRef(false);
+
+  const { processChunk } = useChunkReceiver({
+    onPdfChunkReceived,
+    onAiContent: (content) => {
+      setMessages((prev) => {
+        const lastMessage = prev.at(-1);
+        if (lastMessage?.role === 'assistant') {
+          // Append to the last message if it's from the assistant
+          const updatedLastMessage = {
+            ...lastMessage,
+            content: lastMessage.content + content,
+          };
+          return [...prev.slice(0, -1), updatedLastMessage];
+        } else {
+          // Add a new message if the last one isn't from the assistant
+          return [...prev, { role: 'assistant', content }];
+        }
+      });
+    },
+    onError: (message) => toast.error(`An error occurred: ${message}`),
+  });
 
   useEffect(() => {
     scrollToBottom();
@@ -73,45 +95,13 @@ const PdfChat: React.FC<PdfChatProps> = ({
         throw new Error('Failed to get response reader');
       }
 
-      let assistantReply = '';
-
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(5));
-
-            switch (data.type) {
-              case 'pdf-detail':
-                onPdfChunkReceived?.(data.id);
-                break;
-              case 'ai-content':
-                assistantReply += data.content;
-                setMessages((prev) => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  if (lastMessage.role === 'assistant') {
-                    lastMessage.content = assistantReply;
-                  } else {
-                    newMessages.push({
-                      role: 'assistant',
-                      content: assistantReply,
-                    });
-                  }
-                  return newMessages;
-                });
-                break;
-              case 'error':
-                toast.error(`An error occurred: ${data.message}`);
-                break;
-            }
-          }
-        }
+        console.log('show chunk: ', chunk);
+        processChunk(chunk);
       }
     } catch (error) {
       console.error('Error chatting with PDF:', error);
