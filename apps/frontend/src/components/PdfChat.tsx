@@ -2,12 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
 import { useChunkReceiver } from '../hooks/useChunkReceiver';
+import { useMessageManager } from '@/hooks/useMessageManager';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
+// Define the Message interface
 interface PdfChatProps {
   pdfId: string;
   initialQuestion?: string;
@@ -20,30 +17,23 @@ const PdfChat: React.FC<PdfChatProps> = ({
   onPdfChunkReceived,
 }) => {
   const [question, setQuestion] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSubmittedInitialQuestion = useRef(false);
 
+  // Include flushBuffer here
+  const {
+    messages,
+    setMessages,
+    processIncomingChunk,
+    resetBuffer,
+    flushBuffer,
+  } = useMessageManager();
+
   const { processChunk } = useChunkReceiver({
     onPdfChunkReceived,
-    onAiContent: (content) => {
-      setMessages((prev) => {
-        const lastMessage = prev.at(-1);
-        if (lastMessage?.role === 'assistant') {
-          // Append to the last message if it's from the assistant
-          const updatedLastMessage = {
-            ...lastMessage,
-            content: lastMessage.content + content,
-          };
-          return [...prev.slice(0, -1), updatedLastMessage];
-        } else {
-          // Add a new message if the last one isn't from the assistant
-          return [...prev, { role: 'assistant', content }];
-        }
-      });
-    },
+    onAiContent: processIncomingChunk,
     onError: (message) => toast.error(`An error occurred: ${message}`),
   });
 
@@ -74,6 +64,8 @@ const PdfChat: React.FC<PdfChatProps> = ({
       { role: 'user', content: trimmedQuestion },
     ]);
 
+    resetBuffer();
+
     try {
       const response = await fetch(
         `http://localhost:4000/pdf/${pdfId === 'library' ? 'library-chat' : 'chat'}`,
@@ -100,12 +92,14 @@ const PdfChat: React.FC<PdfChatProps> = ({
         if (done) break;
 
         const chunk = decoder.decode(value);
-        console.log('show chunk: ', chunk);
+
         processChunk(chunk);
       }
-    } catch (error) {
+
+      flushBuffer();
+    } catch (error: any) {
       console.error('Error chatting with PDF:', error);
-      toast.error(`An error occurred: ${error}`);
+      toast.error(`An error occurred: ${error.message || error}`);
     } finally {
       setIsLoading(false);
     }
@@ -135,37 +129,68 @@ const PdfChat: React.FC<PdfChatProps> = ({
     }
   };
 
+  // TODO: Refactor this to be more idiomatic with the Tailwind pattern
+  // Define keyframes for fade-in animation
+  const fadeInStyle = `
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  `;
+
+  // TODO: Refactor this to be more idiomatic with the Tailwind pattern
+  // Define style for each word
+  const wordStyle: React.CSSProperties = {
+    opacity: 0,
+    animation: 'fadeIn 0.5s forwards',
+    display: 'inline',
+  };
+
   return (
     <div className='flex flex-col h-full'>
+      {/* Inline Styles */}
+      <style>{fadeInStyle}</style>
+
       {/* Message Area */}
-      <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-900'>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`p-4 rounded-lg max-w-xl ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-200'
-              }`}
-            >
-              <p className='whitespace-pre-wrap'>{msg.content}</p>
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
+      <div className='flex-1 overflow-y-auto px-4 py-4 bg-gray-900'>
+        <div className='max-w-2xl mx-auto space-y-8'>
+          {messages.map((msg, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && index % 2 === 0 && (
+                <hr className='border-t border-gray-700 my-8' />
+              )}
+              <div
+                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : ''}`}
+              >
+                {msg.role === 'user' && (
+                  <div className='text-xl font-semibold text-white mb-2 max-w-[90%]'>
+                    <p className='whitespace-pre-wrap'>{msg.content}</p>
+                  </div>
+                )}
+                {msg.role === 'assistant' && (
+                  <div className='text-gray-200 text-base'>
+                    <p className='whitespace-pre-wrap'>
+                      {(msg.content as string[]).map((word, wIndex) => (
+                        <span key={wIndex} style={wordStyle}>
+                          {word}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </React.Fragment>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input Area */}
       <form
         onSubmit={handleFormSubmit}
-        className='px-6 py-4 flex bg-gray-900 items-center justify-center'
+        className='px-4 py-4 flex bg-gray-900 items-center justify-center'
       >
-        <div className='flex items-center w-full max-w-lg mx-auto bg-gray-800 rounded-full px-2'>
+        <div className='flex items-center w-full max-w-2xl mx-auto bg-gray-800 rounded-full px-2'>
           <textarea
             ref={textareaRef}
             value={question}
