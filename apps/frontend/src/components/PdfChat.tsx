@@ -2,12 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Send, Loader2 } from 'lucide-react';
 import { useChunkReceiver } from '../hooks/useChunkReceiver';
+import { useMessageManager } from '@/hooks/useMessageManager';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
+// Define the Message interface
 interface PdfChatProps {
   pdfId: string;
   initialQuestion?: string;
@@ -20,30 +17,17 @@ const PdfChat: React.FC<PdfChatProps> = ({
   onPdfChunkReceived,
 }) => {
   const [question, setQuestion] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSubmittedInitialQuestion = useRef(false);
 
+  const { messages, setMessages, processIncomingChunk } = useMessageManager();
+
+  // Handler for processing incoming chunks
   const { processChunk } = useChunkReceiver({
     onPdfChunkReceived,
-    onAiContent: (content) => {
-      setMessages((prev) => {
-        const lastMessage = prev.at(-1);
-        if (lastMessage?.role === 'assistant') {
-          // Append to the last message if it's from the assistant
-          const updatedLastMessage = {
-            ...lastMessage,
-            content: lastMessage.content + content,
-          };
-          return [...prev.slice(0, -1), updatedLastMessage];
-        } else {
-          // Add a new message if the last one isn't from the assistant
-          return [...prev, { role: 'assistant', content }];
-        }
-      });
-    },
+    onAiContent: processIncomingChunk,
     onError: (message) => toast.error(`An error occurred: ${message}`),
   });
 
@@ -100,12 +84,12 @@ const PdfChat: React.FC<PdfChatProps> = ({
         if (done) break;
 
         const chunk = decoder.decode(value);
-        console.log('show chunk: ', chunk);
+
         processChunk(chunk);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error chatting with PDF:', error);
-      toast.error(`An error occurred: ${error}`);
+      toast.error(`An error occurred: ${error.message || error}`);
     } finally {
       setIsLoading(false);
     }
@@ -135,8 +119,26 @@ const PdfChat: React.FC<PdfChatProps> = ({
     }
   };
 
+  // Define keyframes for fade-in animation
+  const fadeInStyle = `
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  `;
+
+  // Define style for each word
+  const wordStyle: React.CSSProperties = {
+    opacity: 0,
+    animation: 'fadeIn 0.5s forwards',
+    display: 'inline',
+  };
+
   return (
     <div className='flex flex-col h-full'>
+      {/* Inline Styles */}
+      <style>{fadeInStyle}</style>
+
       {/* Message Area */}
       <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-900'>
         {messages.map((msg, index) => (
@@ -153,7 +155,17 @@ const PdfChat: React.FC<PdfChatProps> = ({
                   : 'bg-gray-800 text-gray-200'
               }`}
             >
-              <p className='whitespace-pre-wrap'>{msg.content}</p>
+              {msg.role === 'user' ? (
+                <p className='whitespace-pre-wrap'>{msg.content}</p>
+              ) : (
+                <p className='whitespace-pre-wrap'>
+                  {(msg.content as string[]).map((word, wIndex) => (
+                    <span key={wIndex} style={wordStyle}>
+                      {word}
+                    </span>
+                  ))}
+                </p>
+              )}
             </div>
           </div>
         ))}
