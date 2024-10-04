@@ -26,7 +26,7 @@ export class OpenAIService implements AIService {
       }
 
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo', // Changed from 'gpt-4' to 'gpt-3.5-turbo'
+        model: 'gpt-3.5-turbo',
         stream: true,
         messages: messages,
       });
