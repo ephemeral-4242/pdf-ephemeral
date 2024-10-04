@@ -35,7 +35,7 @@ import { HuggingFaceEmbeddingService } from './modules/services/huggingface-embe
     ChunkStreamingService,
     {
       provide: AI_SERVICE,
-      useClass: HuggingFaceEmbeddingService,
+      useClass: OpenAIService,
     },
 
     {

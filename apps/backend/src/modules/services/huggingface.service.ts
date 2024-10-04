@@ -1,27 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Response } from 'express';
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { AIService } from '../interface/ai-service.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import { ChunkStreamingService } from './chunk-streaming.service';
-import { pipeline, AutoTokenizer } from '@huggingface/transformers';
-import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { HfInference } from '@huggingface/inference';
 
 @Injectable()
 export class HuggingFaceService implements AIService {
   private readonly logger = new Logger(HuggingFaceService.name);
-  private generator: any;
-  private tokenizer: any;
+  private hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+  private readonly MAX_TOKENS = 4096;
+  private readonly MAX_NEW_TOKENS = 1000;
 
-  constructor(private chunkStreamingService: ChunkStreamingService) {
-    this.initializeGenerator();
-  }
-
-  private async initializeGenerator() {
-    // Use a more advanced model
-    const modelName = 'gpt2-large';
-    this.generator = await pipeline('text-generation', modelName);
-    this.tokenizer = await AutoTokenizer.from_pretrained(modelName);
-  }
+  constructor(private chunkStreamingService: ChunkStreamingService) {}
 
   async createChatCompletionStream(
     messages: ChatCompletionMessageParam[],
@@ -35,29 +27,22 @@ export class HuggingFaceService implements AIService {
         this.chunkStreamingService.streamPdfDetails(res, pdfDocuments);
       }
 
-      const inputText = this.formatMessages(messages);
-      const encodedInput = await this.tokenizer.encode(inputText);
-
-      if (encodedInput.length > 1024) {
-        throw new Error('Input too long');
-      }
-
-      const stream = await this.generator(inputText, {
-        max_length: 1024,
-        num_return_sequences: 1,
-        do_sample: true,
-        temperature: 0.7,
-        top_k: 50,
-        top_p: 0.95,
-        no_repeat_ngram_size: 2,
-        streaming: true,
+      const prompt = this.formatMessages(messages);
+      const stream = await this.hf.textGenerationStream({
+        model: 'meta-llama/Llama-2-70b-chat-hf',
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: this.MAX_NEW_TOKENS,
+          temperature: 0.7,
+          top_p: 0.95,
+          repetition_penalty: 1.2,
+        },
       });
 
       let assistantReply = '';
-      for await (const output of stream) {
-        const chunk = output.generated_text.slice(assistantReply.length);
-        assistantReply += chunk;
-        this.chunkStreamingService.streamAIContent(res, chunk);
+      for await (const { token } of stream) {
+        assistantReply += token.text;
+        this.chunkStreamingService.streamAIContent(res, token.text);
       }
 
       this.chunkStreamingService.endStream(res);
@@ -65,12 +50,22 @@ export class HuggingFaceService implements AIService {
       return assistantReply;
     } catch (error) {
       this.logger.error(`Error during streaming: ${error.message}`);
-      this.chunkStreamingService.streamError(res, error.message);
+      this.chunkStreamingService.streamError(res, 'Internal Server Error');
       throw error;
     }
   }
 
   private formatMessages(messages: ChatCompletionMessageParam[]): string {
-    return messages.map((msg) => `${msg.role}: ${msg.content}`).join('\n');
+    let formattedPrompt = '';
+    for (const message of messages) {
+      if (message.role === 'system') {
+        formattedPrompt += `[INST] <<SYS>>\n${message.content}\n<</SYS>>\n\n`;
+      } else if (message.role === 'user') {
+        formattedPrompt += `[INST] ${message.content} [/INST]\n`;
+      } else if (message.role === 'assistant') {
+        formattedPrompt += `${message.content}\n`;
+      }
+    }
+    return formattedPrompt;
   }
 }
