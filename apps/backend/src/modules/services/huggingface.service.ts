@@ -4,13 +4,14 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { AIService } from '../interface/ai-service.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import { ChunkStreamingService } from './chunk-streaming.service';
-import { HfInference } from '@huggingface/inference';
+import axios from 'axios';
 
 @Injectable()
 export class HuggingFaceService implements AIService {
   private readonly logger = new Logger(HuggingFaceService.name);
-  private hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
-  private readonly MAX_TOKENS = 4096;
+  private readonly INFERENCE_ENDPOINT =
+    process.env.HUGGINGFACE_INFERENCE_ENDPOINT;
+  private readonly API_KEY = process.env.HUGGINGFACE_API_KEY;
   private readonly MAX_NEW_TOKENS = 1000;
 
   constructor(private chunkStreamingService: ChunkStreamingService) {}
@@ -28,22 +29,45 @@ export class HuggingFaceService implements AIService {
       }
 
       const prompt = this.formatMessages(messages);
-      const stream = await this.hf.textGenerationStream({
-        model: 'meta-llama/Llama-2-70b-chat-hf',
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: this.MAX_NEW_TOKENS,
-          temperature: 0.7,
-          top_p: 0.95,
-          repetition_penalty: 1.2,
+      const response = await axios.post(
+        this.INFERENCE_ENDPOINT,
+        {
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: this.MAX_NEW_TOKENS,
+            temperature: 0.7,
+            top_p: 0.95,
+            repetition_penalty: 1.2,
+            stream: true,
+          },
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${this.API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          responseType: 'stream',
+        },
+      );
 
       let assistantReply = '';
-      for await (const { token } of stream) {
-        assistantReply += token.text;
-        this.chunkStreamingService.streamAIContent(res, token.text);
-      }
+      response.data.on('data', (chunk: Buffer) => {
+        const lines = chunk
+          .toString()
+          .split('\n')
+          .filter((line) => line.trim() !== '');
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const data = JSON.parse(line.slice(5));
+            if (data.token && data.token.text) {
+              assistantReply += data.token.text;
+              this.chunkStreamingService.streamAIContent(res, data.token.text);
+            }
+          }
+        }
+      });
+
+      await new Promise((resolve) => response.data.on('end', resolve));
 
       this.chunkStreamingService.endStream(res);
 
