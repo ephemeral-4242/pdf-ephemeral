@@ -17,6 +17,7 @@ import { FILE_REPOSITORY } from './modules/interface/file-service.interface';
 import { EMBEDDING_SERVICE } from './modules/interface/embedding-service.interface';
 import { AI_SERVICE } from './modules/interface/ai-service.interface';
 import { ChunkStreamingService } from './modules/services/chunk-streaming.service';
+import { HuggingFaceEmbeddingService } from './modules/services/huggingface-embedding.service';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { ChunkStreamingService } from './modules/services/chunk-streaming.servic
     ChunkStreamingService,
     {
       provide: AI_SERVICE,
-      useClass: OpenAIService,
+      useClass: HuggingFaceEmbeddingService,
     },
 
     {
@@ -47,7 +48,7 @@ import { ChunkStreamingService } from './modules/services/chunk-streaming.servic
     },
     {
       provide: EMBEDDING_SERVICE,
-      useClass: EmbeddingService,
+      useClass: HuggingFaceEmbeddingService,
     },
   ],
 })
