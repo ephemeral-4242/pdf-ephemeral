@@ -32,7 +32,7 @@ export class HuggingFaceService implements AIService {
 
       // Update the model name to "meta-llama/Llama-3.1-70B-Instruct"
       const stream = await this.openai.chat.completions.create({
-        model: 'meta-llama/Llama-3.1-70B-Instruct',
+        model: process.env.HUGGINGFACE_MODEL_IN_USE,
         stream: true,
         messages: messages,
       });
