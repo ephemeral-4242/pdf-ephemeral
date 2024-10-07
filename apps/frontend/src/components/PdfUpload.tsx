@@ -22,27 +22,33 @@ interface PdfUploadProps {
 }
 
 const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { uploadPdf, isUploading } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFile(acceptedFiles[0]);
+    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
-    multiple: false,
+    multiple: true,
   });
+
+  const removeFile = (fileToRemove: File) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !selectedFolder) return;
+    if (files.length === 0 || !selectedFolder) return;
 
-    await uploadPdf(file, onUploadSuccess, selectedFolder);
-    setFile(null);
+    for (const file of files) {
+      await uploadPdf(file, onUploadSuccess, selectedFolder);
+    }
+    setFiles([]);
   };
 
   useEffect(() => {
@@ -71,28 +77,37 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
           }`}
         >
           <input {...getInputProps()} />
-          {file ? (
-            <div className='flex items-center justify-center space-x-4'>
-              <FiFile className='text-blue-500 text-4xl' />
-              <span className='text-sm font-medium text-gray-200 truncate max-w-[200px]'>
-                {file.name}
-              </span>
-              <button
-                type='button'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFile(null);
-                }}
-                className='text-red-500 hover:text-red-700 transition-colors duration-200'
-              >
-                <FiX className='text-2xl' />
-              </button>
+          {files.length > 0 ? (
+            <div className='space-y-2'>
+              {files.map((file, index) => (
+                <div key={index} className='flex items-center justify-between'>
+                  <div className='flex items-center space-x-2'>
+                    <FiFile className='text-blue-500 text-xl' />
+                    <span className='text-sm font-medium text-gray-200 truncate max-w-[200px]'>
+                      {file.name}
+                    </span>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(file);
+                    }}
+                    className='text-red-500 hover:text-red-700 transition-colors duration-200'
+                  >
+                    <FiX className='text-xl' />
+                  </button>
+                </div>
+              ))}
+              <p className='text-sm text-gray-400 mt-2'>
+                Drop more files or click to select
+              </p>
             </div>
           ) : (
             <div>
               <FiUploadCloud className='mx-auto text-6xl text-gray-400 mb-6' />
               <p className='text-lg font-medium text-gray-200 mb-2'>
-                Drag and drop your PDF here
+                Drag and drop your PDFs here
               </p>
               <p className='text-sm text-gray-400'>or click to select</p>
             </div>
@@ -132,7 +147,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
         {/* Upload Button */}
         <Button
           type='submit'
-          disabled={isUploading || !file || !selectedFolder}
+          disabled={isUploading || files.length === 0 || !selectedFolder}
           className='w-full py-3'
         >
           {isUploading ? (
@@ -160,7 +175,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
               Uploading...
             </>
           ) : (
-            'Upload PDF'
+            `Upload ${files.length} PDF${files.length !== 1 ? 's' : ''}`
           )}
         </Button>
       </form>
