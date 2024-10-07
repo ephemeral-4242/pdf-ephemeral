@@ -18,9 +18,92 @@ import { Folder } from '@/components/PdfUpload';
 import { useModals } from '@/hooks/useModals';
 import { PDF, usePDFs } from '@/hooks/usePDFs';
 
+import { usePdfUpload } from '@/hooks/usePdfUpload';
+
+interface FolderUploadModalProps {
+  onClose: () => void;
+  onUploadSuccess: (urls: string[]) => void;
+}
+
+const FolderUploadModal: React.FC<FolderUploadModalProps> = ({
+  onClose,
+  onUploadSuccess,
+}) => {
+  const { uploadFolder, isUploading } = usePdfUpload();
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleFolderUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    setError(null);
+    setSuccessMessage(null);
+
+    if (!files || files.length === 0) {
+      setError('No files selected');
+      return;
+    }
+
+    const fileArray = Array.from(files);
+    const folderName = fileArray[0].webkitRelativePath.split('/')[0];
+
+    // Basic validation: check if all files are PDFs
+    const nonPdfFiles = fileArray.filter((file) => !file.type.includes('pdf'));
+    if (nonPdfFiles.length > 0) {
+      setError(
+        `${nonPdfFiles.length} non-PDF files found. Please select only PDF files.`
+      );
+      return;
+    }
+
+    try {
+      const result = await uploadFolder(fileArray, folderName);
+      if (result.urls && result.urls.length > 0) {
+        setSuccessMessage(`Successfully uploaded ${result.urls.length} PDF(s)`);
+        onUploadSuccess(result.urls);
+      } else {
+        setError('No PDFs were successfully uploaded');
+      }
+    } catch (err) {
+      setError(
+        `Error uploading folder: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  };
+
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
+      <div className='bg-gray-800 p-6 rounded-lg shadow-lg relative'>
+        <button
+          className='absolute top-2 right-2 text-gray-500 hover:text-gray-700'
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <h2 className='text-xl mb-4'>Upload Folder</h2>
+        <input
+          type='file'
+          webkitdirectory='true'
+          directory='true'
+          multiple
+          onChange={handleFolderUpload}
+          className='mb-4'
+        />
+        {isUploading && <p>Uploading...</p>}
+        {error && <p className='text-red-500 mt-2'>{error}</p>}
+        {successMessage && (
+          <p className='text-green-500 mt-2'>{successMessage}</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface HeaderProps {
   onNewFolder: () => void;
   onUploadPDF: () => void;
+  onUploadFolder: () => void; // New prop for folder upload
 }
 
 interface FolderItemProps {
@@ -40,7 +123,7 @@ interface UploadModalProps {
 }
 
 const PDFComponents = {
-  Header: ({ onNewFolder, onUploadPDF }: HeaderProps) => (
+  Header: ({ onNewFolder, onUploadPDF, onUploadFolder }: HeaderProps) => (
     <div className='flex justify-between items-center mb-6'>
       <h1 className='text-2xl font-semibold'>Your PDF Library</h1>
       <div className='flex space-x-2'>
@@ -57,6 +140,13 @@ const PDFComponents = {
         >
           <UploadCloud className='h-4 w-4 mr-2' />
           Upload PDF
+        </button>
+        <button
+          className='px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md flex items-center'
+          onClick={onUploadFolder}
+        >
+          <UploadCloud className='h-4 w-4 mr-2' />
+          Upload Folder
         </button>
       </div>
     </div>
@@ -150,6 +240,7 @@ const PDFComponents = {
 export default function PDFsPage() {
   const { pdfs, setPdfs, isLoading, groupedPdfs } = usePDFs();
   const { showCreateFolderModal, showUploadModal, toggleModal } = useModals();
+  const [showFolderUploadModal, setShowFolderUploadModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set()
   );
@@ -175,6 +266,21 @@ export default function PDFsPage() {
     router.push(`/chat/${id}`);
   };
 
+  const handleFolderUploadSuccess = (urls: string[]) => {
+    console.log('Folder upload successful:', urls);
+    setShowFolderUploadModal(false);
+    // Refresh the PDF list
+    setPdfs((prevPdfs) => [
+      ...prevPdfs,
+      ...urls.map((url) => ({
+        id: url.split('/').pop() || '',
+        fileName: url.split('/').pop() || '',
+        uploadDate: new Date().toISOString(),
+        url: url,
+      })),
+    ]);
+  };
+
   if (isLoading) {
     return (
       <div className='flex justify-center items-center h-screen bg-gray-900'>
@@ -188,6 +294,7 @@ export default function PDFsPage() {
       <PDFComponents.Header
         onNewFolder={() => toggleModal('folder')}
         onUploadPDF={() => toggleModal('upload')}
+        onUploadFolder={() => setShowFolderUploadModal(true)}
       />
 
       {Object.keys(groupedPdfs).length === 0 ? (
@@ -218,6 +325,13 @@ export default function PDFsPage() {
         <PDFComponents.UploadModal
           onClose={() => toggleModal('upload')}
           onUploadSuccess={handleUploadSuccess}
+        />
+      )}
+
+      {showFolderUploadModal && (
+        <FolderUploadModal
+          onClose={() => setShowFolderUploadModal(false)}
+          onUploadSuccess={handleFolderUploadSuccess}
         />
       )}
     </div>
