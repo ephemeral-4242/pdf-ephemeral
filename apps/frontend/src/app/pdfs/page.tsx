@@ -14,10 +14,11 @@ import {
 } from 'lucide-react';
 import CreateFolderModal from '../../components/CreateFolderModal';
 import PdfUpload from '../../components/PdfUpload';
+import FolderUploadModal from '../../components/FolderUploadModal';
 import { useModals } from '@/hooks/useModals';
 import { PDF, usePDFs } from '@/hooks/usePDFs';
-import FolderUploadModal from '../../components/FolderUploadModal';
 
+// Component interfaces
 interface HeaderProps {
   onNewFolder: () => void;
   onUploadPDF: () => void;
@@ -40,6 +41,7 @@ interface UploadModalProps {
   onUploadSuccess: (url: string) => void;
 }
 
+// Subcomponents
 const PDFComponents = {
   Header: ({ onNewFolder, onUploadPDF, onUploadFolder }: HeaderProps) => (
     <div className='flex justify-between items-center mb-6'>
@@ -155,7 +157,9 @@ const PDFComponents = {
   ),
 };
 
+// Main component
 export default function PDFsPage() {
+  // Hooks and state
   const { isLoading, groupedPdfs, refetchPdfs } = usePDFs();
   const { showCreateFolderModal, showUploadModal, toggleModal } = useModals();
   const [showFolderUploadModal, setShowFolderUploadModal] = useState(false);
@@ -164,6 +168,7 @@ export default function PDFsPage() {
   );
   const router = useRouter();
 
+  // Helper functions
   const toggleFolder = (folderName: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
@@ -189,6 +194,7 @@ export default function PDFsPage() {
     await refetchPdfs();
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className='flex justify-center items-center h-screen bg-gray-900'>
@@ -197,6 +203,7 @@ export default function PDFsPage() {
     );
   }
 
+  // Main render
   return (
     <div className='container mx-auto py-8 px-4 bg-gray-900 text-gray-100'>
       <PDFComponents.Header
@@ -221,6 +228,7 @@ export default function PDFsPage() {
         </div>
       )}
 
+      {/* Modals */}
       <CreateFolderModal
         show={showCreateFolderModal}
         onClose={() => toggleModal('folder')}
