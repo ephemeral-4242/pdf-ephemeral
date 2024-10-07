@@ -1,16 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { usePdfUpload } from '../hooks/usePdfUpload';
 import { Button } from './common/Button';
-import { api } from '../api/routes';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/common/Select';
 
 export interface Folder {
   id: string;
@@ -27,7 +19,20 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
   const { uploadFolder, isUploading } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
+    const newFiles = acceptedFiles.filter(
+      (file) => file.type === 'application/pdf'
+    );
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+
+    if (newFiles.length > 0) {
+      const folderPath = newFiles[0].path;
+      if (folderPath) {
+        const detectedFolderName = folderPath.split('/').slice(-2, -1)[0];
+        setFolderName(detectedFolderName || 'Uploaded PDFs');
+      } else {
+        setFolderName('Uploaded PDFs');
+      }
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -42,9 +47,13 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (files.length === 0 || !folderName) return;
+    if (files.length === 0) return;
 
-    const urls = await uploadFolder(files, folderName, onUploadSuccess);
+    const urls = await uploadFolder(
+      files,
+      folderName || 'Uploaded PDFs',
+      onUploadSuccess
+    );
     if (urls) {
       onUploadSuccess(urls);
     }
@@ -95,35 +104,27 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
             <div>
               <FiUploadCloud className='mx-auto text-6xl text-gray-400 mb-6' />
               <p className='text-lg font-medium text-gray-200 mb-2'>
-                Drag and drop your PDFs here
+                Drag and drop your PDF folder here
               </p>
-              <p className='text-sm text-gray-400'>or click to select</p>
+              <p className='text-sm text-gray-400'>or click to select PDFs</p>
             </div>
           )}
         </div>
 
-        {/* Folder Selection */}
-        <div>
-          <label
-            htmlFor='folder'
-            className='block text-sm font-medium text-gray-200 mb-3'
-          >
-            Enter Folder Name
-          </label>
-          <input
-            type='text'
-            id='folder'
-            name='folder'
-            value={folderName}
-            onChange={(e) => setFolderName(e.target.value)}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
-          />
+        {/* Display detected folder name */}
+        <div className='mt-4'>
+          <p className='text-sm text-gray-400'>
+            Folder:{' '}
+            <span className='font-medium text-gray-200'>
+              {folderName || 'Uploaded PDFs'}
+            </span>
+          </p>
         </div>
 
         {/* Upload Button */}
         <Button
           type='submit'
-          disabled={isUploading || files.length === 0 || !folderName}
+          disabled={isUploading || files.length === 0}
           className='w-full py-3'
         >
           {isUploading ? (
