@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
   Res,
   Body,
@@ -10,7 +11,10 @@ import {
   Get,
   NotFoundException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileInterceptor,
+  FileFieldsInterceptor,
+} from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
 import { Request, Response } from 'express';
 import { RateLimitError } from 'openai';
@@ -173,5 +177,45 @@ export class PdfController {
         }
       }
     }
+  }
+
+  @Post('upload-enhanced')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'files', maxCount: 100 },
+      { name: 'paths', maxCount: 100 },
+    ]),
+  )
+  async uploadEnhanced(
+    @UploadedFiles()
+    files: { files: Express.Multer.File[]; paths: Express.Multer.File[] },
+    @Body('folderId') folderId: string,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    if (!files.files || files.files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+    this.logger.log('Enhanced upload initiated');
+
+    // Extract the paths from the 'paths' files
+    const paths = files.paths.map((pathFile) => pathFile.buffer.toString());
+
+    const uploadedFiles = await this.pdfService.processAndSaveEnhanced(
+      files.files,
+      paths,
+      folderId,
+    );
+
+    this.logger.log('PDFs processed and saved');
+
+    const fileUrls = uploadedFiles.map(
+      (file) => `${req.protocol}://${req.get('host')}/${file.filePath}`,
+    );
+
+    res.status(200).json({
+      message: 'PDFs uploaded and processed.',
+      urls: fileUrls,
+    });
   }
 }

@@ -8,16 +8,17 @@ datasource db {
 }
 
 model PDF {
-  id         String   @id @default(uuid())
-  fileName   String
-  fileSize   Int
-  mimeType   String
-  filePath   String
-  content    String   @db.Text
-  uploadDate DateTime @default(now())
-  userId     String?
-  folder     Folder?  @relation(fields: [folderId], references: [id])
-  folderId   String?
+  id           String   @id @default(uuid())
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  filePath     String
+  content      String   @db.Text
+  uploadDate   DateTime @default(now())
+  userId       String?
+  folder       Folder?  @relation(fields: [folderId], references: [id])
+  folderId     String?
+  relativePath String?  // Add this line
 }
 
 model Folder {

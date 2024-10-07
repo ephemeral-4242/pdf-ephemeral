@@ -38,9 +38,14 @@ export class PdfService {
   async processAndSavePdf(
     file: Express.Multer.File,
     folderId?: string, // Changed from folderName to folderId
+    relativePath?: string,
   ): Promise<PDFDocument> {
     try {
-      const pdfDocument = await this.pdfRepository.save(file, folderId);
+      const pdfDocument = await this.pdfRepository.save(
+        file,
+        folderId,
+        relativePath,
+      );
       this.pdfText = pdfDocument.content;
       this.resetConversation();
 
@@ -260,5 +265,26 @@ export class PdfService {
       );
       throw error;
     }
+  }
+
+  async processAndSaveEnhanced(
+    files: Express.Multer.File[],
+    paths: string[],
+    folderId?: string,
+  ): Promise<PDFDocument[]> {
+    const processedDocuments: PDFDocument[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const relativePath = paths[i];
+      const pdfDocument = await this.processAndSavePdf(
+        file,
+        folderId,
+        relativePath,
+      );
+      processedDocuments.push(pdfDocument);
+    }
+
+    return processedDocuments;
   }
 }

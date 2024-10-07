@@ -44,5 +44,10 @@ export const api = {
         },
         body: JSON.stringify({ name }),
       }),
+    uploadEnhanced: (formData: FormData) =>
+      fetchApi('/pdf/upload-enhanced', {
+        method: 'POST',
+        body: formData,
+      }),
   },
 };

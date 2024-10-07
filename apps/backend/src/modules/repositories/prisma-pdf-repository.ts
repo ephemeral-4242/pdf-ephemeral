@@ -20,6 +20,7 @@ export class PrismaPDFRepository implements IPDFRepository {
   async save(
     file: Express.Multer.File,
     folderId?: string,
+    relativePath?: string,
   ): Promise<PDFDocument> {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const filename = `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`;
@@ -32,6 +33,11 @@ export class PrismaPDFRepository implements IPDFRepository {
       if (folder) {
         folderPath = path.join('uploads', folder.name);
       }
+    }
+
+    // If relativePath is provided, append it to the folderPath
+    if (relativePath) {
+      folderPath = path.join(folderPath, path.dirname(relativePath));
     }
 
     const filePath = this.diskService.getFilePath(folderPath, filename);
@@ -49,6 +55,7 @@ export class PrismaPDFRepository implements IPDFRepository {
         filePath: filePath,
         content: content,
         folderId: folderId,
+        relativePath: relativePath, // Add this line to store the relativePath
       },
       include: {
         folder: true,
