@@ -41,16 +41,13 @@ export default function LibraryChatPage() {
   }, []);
 
   const pdfsToRender = allPdfs.filter((pdf) => pdfIdsToRender.includes(pdf.id));
-
   const handlePdfRendering = (id: string) => {
     setPdfIdsToRender((prevIds) => {
-      if (prevIds.includes(id)) {
-        return prevIds.filter((prevId) => prevId !== id);
-      } else {
-        // Open the drawer when a new PDF ID is added
+      if (!prevIds.includes(id)) {
         setIsDrawerOpen(true);
         return [...prevIds, id];
       }
+      return prevIds;
     });
   };
 
