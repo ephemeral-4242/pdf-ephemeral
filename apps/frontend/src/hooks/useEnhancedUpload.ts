@@ -5,7 +5,10 @@ import { FileTreeNode } from '../components/FileTree';
 export const useEnhancedUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadFiles = async (fileTree: FileTreeNode[]): Promise<string[]> => {
+  const uploadFiles = async (
+    fileTree: FileTreeNode[],
+    folderId: string
+  ): Promise<string[]> => {
     setIsUploading(true);
     const formData = new FormData();
     const paths: string[] = [];
@@ -23,6 +26,9 @@ export const useEnhancedUpload = () => {
     fileTree.forEach((node) => addToFormData(node, node.name));
 
     paths.forEach((path) => formData.append('paths', path));
+
+    // Append folderId to formData
+    formData.append('folderId', folderId);
 
     try {
       const result = await api.pdf.uploadEnhanced(formData);

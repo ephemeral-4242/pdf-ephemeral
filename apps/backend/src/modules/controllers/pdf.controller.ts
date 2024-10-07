@@ -198,6 +198,7 @@ export class PdfController {
     }
     this.logger.log('Enhanced upload initiated');
 
+    console.log('files: ', files);
     // Extract the paths from the 'paths' files
     const paths = files.paths.map((pathFile) => pathFile.buffer.toString());
 
