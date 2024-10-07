@@ -12,18 +12,18 @@ import {
 } from '../interface/embedding-service.interface';
 import { QdrantService } from './qdrant-service';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { OpenAIService } from './openai.service';
 import {
   IPDFRepository,
   PDF_REPOSITORY,
 } from '../interface/pdf-repository.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import { AI_SERVICE, AIService } from '../interface/ai-service.interface';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
-  private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  private openai: OpenAI;
   private pdfText: string;
 
   constructor(
@@ -31,13 +31,18 @@ export class PdfService {
     private qdrantService: QdrantService,
     @Inject(EMBEDDING_SERVICE) private embeddingService: IEmbeddingService,
     @Inject(AI_SERVICE) private openAIService: AIService,
-  ) {}
+    private configService: ConfigurationService,
+  ) {
+    this.openai = new OpenAI({
+      apiKey: this.configService.get('OPENAI_API_KEY'),
+    });
+  }
 
   private conversation: ChatCompletionMessageParam[] = [];
 
   async processAndSavePdf(
     file: Express.Multer.File,
-    folderId?: string, // Changed from folderName to folderId
+    folderId?: string,
   ): Promise<PDFDocument> {
     try {
       const pdfDocument = await this.pdfRepository.save(file, folderId);
@@ -48,7 +53,7 @@ export class PdfService {
 
       const chunks = splitTextIntoChunks(this.pdfText, 2000);
 
-      console.log('chunks', chunks.length);
+      this.logger.log(`Number of chunks: ${chunks.length}`);
 
       const points = await Promise.all(
         chunks.map(async (chunk, index) => {
@@ -125,13 +130,11 @@ export class PdfService {
     res: Response,
   ): Promise<void> {
     try {
-      // Retrieve the PDF content using the pdfId
       const pdfDocument = await this.pdfRepository.getById(pdfId);
       if (!pdfDocument) {
         throw new NotFoundException(`PDF with id ${pdfId} not found`);
       }
 
-      // Add user's question to the conversation
       this.conversation = [
         {
           role: 'system',

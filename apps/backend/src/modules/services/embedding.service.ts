@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { IEmbeddingService } from '../interface/embedding-service.interface';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class EmbeddingService implements IEmbeddingService {
   private openai: OpenAI;
+  private configService: ConfigurationService;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    this.openai = new OpenAI({
+      apiKey: this.configService.get('OPENAI_API_KEY'),
+    });
   }
 
   async generateEmbedding(text: string): Promise<number[]> {

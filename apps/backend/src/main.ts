@@ -1,14 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
-import * as dotenv from 'dotenv';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-
-dotenv.config();
+import { ConfigurationService } from './config/configuration.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const configService = app.get(ConfigurationService);
+
   app.enableCors();
 
   // Serve static files from the 'uploads' directory
@@ -16,7 +15,9 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(4000);
+  const port = configService.getNumber('PORT') || 4000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
 }
 
 bootstrap();

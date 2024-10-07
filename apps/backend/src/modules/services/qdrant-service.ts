@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class QdrantService {
   private qdrantClient: QdrantClient;
 
-  constructor() {
+  constructor(private configService: ConfigurationService) {
     this.qdrantClient = new QdrantClient({
       url: 'http://localhost:6333',
-      apiKey: process.env.QDRANT_API_KEY,
+      apiKey: this.configService.get('QDRANT_API_KEY'),
     });
   }
 
