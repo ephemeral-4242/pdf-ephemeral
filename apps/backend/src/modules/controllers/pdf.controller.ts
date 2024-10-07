@@ -9,8 +9,9 @@ import {
   Req,
   Get,
   NotFoundException,
+  UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { PdfService } from '../services/pdf.service';
 import { Request, Response } from 'express';
 import { RateLimitError } from 'openai';
@@ -49,6 +50,40 @@ export class PdfController {
       message: 'PDF uploaded and text extracted.',
       url: fileUrl,
       folder: pdfDocument.folder,
+    });
+  }
+
+  @Post('upload-folder')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadFolder(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('folderName') folderName: string,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    console.log('hereeee?????');
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+    if (!folderName) {
+      throw new BadRequestException('Folder name is required');
+    }
+    this.logger.log('Folder upload initiated');
+
+    const pdfDocuments = await this.pdfService.processAndSaveFolder(
+      files,
+      folderName,
+    );
+
+    this.logger.log('Folder processed and saved');
+
+    const fileUrls = pdfDocuments.map(
+      (doc) => `${req.protocol}://${req.get('host')}/${doc.filePath}`,
+    );
+    res.status(200).json({
+      message: 'Folder uploaded and processed successfully.',
+      urls: fileUrls,
+      folderName: folderName,
     });
   }
 

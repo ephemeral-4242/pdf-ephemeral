@@ -261,4 +261,24 @@ export class PdfService {
       throw error;
     }
   }
+
+  async processAndSaveFolder(
+    files: Express.Multer.File[],
+    folderName: string,
+  ): Promise<PDFDocument[]> {
+    try {
+      const folder = await this.pdfRepository.getOrCreateFolder(folderName);
+      const savedPdfs: PDFDocument[] = [];
+
+      for (const file of files) {
+        const pdfDocument = await this.processAndSavePdf(file, folder.id);
+        savedPdfs.push(pdfDocument);
+      }
+
+      return savedPdfs;
+    } catch (error) {
+      this.logger.error(`Error processing and saving folder: ${error.message}`);
+      throw error;
+    }
+  }
 }

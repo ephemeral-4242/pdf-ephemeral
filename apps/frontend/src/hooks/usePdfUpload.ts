@@ -31,6 +31,34 @@ export const usePdfUpload = () => {
       setIsUploading(false);
     }
   };
+  const uploadFolder = async (
+    files: File[],
+    folderName: string,
+    onUploadSuccess: (urls: string[]) => void
+  ): Promise<string[]> => {
+    setIsUploading(true);
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    formData.append('folderName', folderName);
 
-  return { uploadPdf, isUploading };
+    try {
+      const result = await api.pdf.uploadFolder(formData);
+
+      if (!result.urls || result.urls.length === 0) {
+        throw new Error('No URLs returned from server');
+      }
+
+      toast.success('Folder uploaded successfully');
+      onUploadSuccess(result.urls);
+      return result.urls;
+    } catch (error) {
+      console.error('Error uploading folder:', error);
+      toast.error('Error uploading folder');
+      return []; // Return an empty array if there's an error
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return { uploadPdf, uploadFolder, isUploading };
 };
