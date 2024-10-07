@@ -78,7 +78,7 @@ const EnhancedUpload: React.FC<EnhancedUploadProps> = ({ onUploadSuccess }) => {
             : 'border-gray-700 hover:border-blue-400'
         }`}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} webkitdirectory='true' />
         <FiUploadCloud className='mx-auto text-5xl text-gray-400 mb-4' />
         {isDragActive ? (
           <p className='text-lg text-blue-500 font-medium'>
