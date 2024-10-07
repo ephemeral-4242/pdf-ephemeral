@@ -19,7 +19,7 @@ import { AI_SERVICE } from './modules/interface/ai-service.interface';
 import { ChunkStreamingService } from './modules/services/chunk-streaming.service';
 import { HuggingFaceEmbeddingService } from './modules/services/huggingface-embedding.service';
 import { HuggingFaceService } from './modules/services/huggingface.service';
-
+import { ConfigurationService } from './config/configuration.service';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -34,6 +34,7 @@ import { HuggingFaceService } from './modules/services/huggingface.service';
     PrismaService,
     QdrantService,
     ChunkStreamingService,
+    ConfigurationService,
     {
       provide: AI_SERVICE,
       useClass: OpenAIService,
