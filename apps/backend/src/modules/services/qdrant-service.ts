@@ -28,7 +28,7 @@ export class QdrantService {
 
       await this.qdrantClient.createCollection(collectionName, {
         vectors: {
-          size: 1536,
+          size: 384,
           distance: 'Cosine',
         },
       });

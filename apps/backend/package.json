@@ -21,14 +21,18 @@
     "dev": "nest start --watch"
   },
   "dependencies": {
+    "@huggingface/inference": "^2.8.1",
+    "@huggingface/transformers": "^3.0.0-alpha.19",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.4.1",
     "@nestjs/serve-static": "^4.0.2",
     "@prisma/client": "^5.20.0",
     "@qdrant/js-client-rest": "^1.11.0",
+    "axios": "^1.7.7",
     "docx-parser": "^0.2.1",
     "dotenv": "^16.4.5",
+    "huggingface": "^1.4.0",
     "multer": "^1.4.5-lts.1",
     "openai": "^4.61.0",
     "pdf-lib": "^1.17.1",

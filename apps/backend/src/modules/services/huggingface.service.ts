@@ -7,9 +7,14 @@ import { PDFDocument } from 'src/types/pdf-document.type';
 import { ChunkStreamingService } from './chunk-streaming.service';
 
 @Injectable()
-export class OpenAIService implements AIService {
-  private readonly logger = new Logger(OpenAIService.name);
-  private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export class HuggingFaceService implements AIService {
+  private readonly logger = new Logger(HuggingFaceService.name);
+
+  // Update the baseURL to Hugging Face’s endpoint
+  private openai = new OpenAI({
+    apiKey: process.env.HUGGINGFACE_API_KEY,
+    baseURL: process.env.HUGGINGFACE_INFERENCE_ENDPOINT,
+  });
 
   constructor(private chunkStreamingService: ChunkStreamingService) {}
 
@@ -25,8 +30,9 @@ export class OpenAIService implements AIService {
         this.chunkStreamingService.streamPdfDetails(res, pdfDocuments);
       }
 
+      // Update the model name to "meta-llama/Llama-3.1-70B-Instruct"
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: process.env.HUGGINGFACE_MODEL_IN_USE,
         stream: true,
         messages: messages,
       });
