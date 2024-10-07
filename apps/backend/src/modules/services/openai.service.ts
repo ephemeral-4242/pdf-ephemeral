@@ -5,13 +5,21 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { AIService } from '../interface/ai-service.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import { ChunkStreamingService } from './chunk-streaming.service';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class OpenAIService implements AIService {
   private readonly logger = new Logger(OpenAIService.name);
-  private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  private openai: OpenAI;
 
-  constructor(private chunkStreamingService: ChunkStreamingService) {}
+  constructor(
+    private chunkStreamingService: ChunkStreamingService,
+    private configService: ConfigurationService,
+  ) {
+    this.openai = new OpenAI({
+      apiKey: this.configService.get('OPENAI_API_KEY'),
+    });
+  }
 
   async createChatCompletionStream(
     messages: ChatCompletionMessageParam[],
@@ -26,7 +34,7 @@ export class OpenAIService implements AIService {
       }
 
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: this.configService.get('OPENAI_MODEL_IN_USE') || 'gpt-3.5-turbo',
         stream: true,
         messages: messages,
       });

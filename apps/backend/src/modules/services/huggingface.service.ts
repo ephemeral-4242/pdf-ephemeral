@@ -5,18 +5,22 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { AIService } from '../interface/ai-service.interface';
 import { PDFDocument } from 'src/types/pdf-document.type';
 import { ChunkStreamingService } from './chunk-streaming.service';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class HuggingFaceService implements AIService {
   private readonly logger = new Logger(HuggingFaceService.name);
+  private openai: OpenAI;
 
-  // Update the baseURL to Hugging Face’s endpoint
-  private openai = new OpenAI({
-    apiKey: process.env.HUGGINGFACE_API_KEY,
-    baseURL: process.env.HUGGINGFACE_INFERENCE_ENDPOINT,
-  });
-
-  constructor(private chunkStreamingService: ChunkStreamingService) {}
+  constructor(
+    private chunkStreamingService: ChunkStreamingService,
+    private configService: ConfigurationService,
+  ) {
+    this.openai = new OpenAI({
+      apiKey: this.configService.get('HUGGINGFACE_API_KEY'),
+      baseURL: this.configService.get('HUGGINGFACE_INFERENCE_ENDPOINT'),
+    });
+  }
 
   async createChatCompletionStream(
     messages: ChatCompletionMessageParam[],
@@ -30,9 +34,8 @@ export class HuggingFaceService implements AIService {
         this.chunkStreamingService.streamPdfDetails(res, pdfDocuments);
       }
 
-      // Update the model name to "meta-llama/Llama-3.1-70B-Instruct"
       const stream = await this.openai.chat.completions.create({
-        model: process.env.HUGGINGFACE_MODEL_IN_USE,
+        model: this.configService.get('HUGGINGFACE_MODEL_IN_USE'),
         stream: true,
         messages: messages,
       });

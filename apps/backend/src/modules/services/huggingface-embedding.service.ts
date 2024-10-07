@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { IEmbeddingService } from '../interface/embedding-service.interface';
 import { HfInference } from '@huggingface/inference';
+import { ConfigurationService } from 'src/config/configuration.service';
 
 @Injectable()
 export class HuggingFaceEmbeddingService
@@ -10,9 +11,9 @@ export class HuggingFaceEmbeddingService
   private hf: HfInference;
   private readonly model = 'sentence-transformers/all-MiniLM-L6-v2';
 
-  constructor() {
+  constructor(private configService: ConfigurationService) {
     this.logger.log('Initializing HuggingFaceEmbeddingService');
-    this.hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+    this.hf = new HfInference(this.configService.get('HUGGINGFACE_API_KEY'));
     this.logger.log('HuggingFace Inference initialized');
   }
 
