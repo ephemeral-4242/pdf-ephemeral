@@ -36,7 +36,7 @@ interface PDFItemProps {
 
 interface UploadModalProps {
   onClose: () => void;
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (urls: string[]) => void;
 }
 
 const PDFComponents = {
@@ -168,11 +168,15 @@ export default function PDFsPage() {
     });
   };
 
-  const handleUploadSuccess = (url: string) => {
-    console.log('Upload successful:', url);
+  const handleUploadSuccess = (urls: string[]) => {
+    console.log('Upload successful:', urls);
     toggleModal('upload');
-    const id = url.split('/').pop();
-    router.push(`/chat/${id}`);
+    if (urls.length > 0) {
+      const id = urls[0].split('/').pop();
+      if (id) {
+        router.push(`/chat/${id}`);
+      }
+    }
   };
 
   if (isLoading) {

@@ -18,14 +18,13 @@ export interface Folder {
 }
 
 interface PdfUploadProps {
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (urls: string[]) => void;
 }
 
 const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
   const [files, setFiles] = useState<File[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const { uploadPdf, isUploading } = usePdfUpload();
+  const [folderName, setFolderName] = useState<string>('');
+  const { uploadFolder, isUploading } = usePdfUpload();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -43,26 +42,15 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (files.length === 0 || !selectedFolder) return;
+    if (files.length === 0 || !folderName) return;
 
-    for (const file of files) {
-      await uploadPdf(file, onUploadSuccess, selectedFolder);
+    const urls = await uploadFolder(files, folderName, onUploadSuccess);
+    if (urls) {
+      onUploadSuccess(urls);
     }
     setFiles([]);
+    setFolderName('');
   };
-
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const fetchedFolders = await api.pdf.getAllFolders();
-        setFolders(fetchedFolders);
-      } catch (error) {
-        console.error('Error fetching folders:', error);
-      }
-    };
-
-    fetchFolders();
-  }, []);
 
   return (
     <div className='w-full max-w-md mx-auto'>
@@ -120,34 +108,22 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
             htmlFor='folder'
             className='block text-sm font-medium text-gray-200 mb-3'
           >
-            Select Folder
+            Enter Folder Name
           </label>
-          <div className='flex space-x-3'>
-            <Select onValueChange={(value) => setSelectedFolder(value)}>
-              <SelectTrigger id='folder' name='folder' className='w-full'>
-                <SelectValue placeholder='Choose a folder' />
-              </SelectTrigger>
-              <SelectContent>
-                {folders.length === 0 ? (
-                  <SelectItem value='none' disabled>
-                    No folders available
-                  </SelectItem>
-                ) : (
-                  folders.map((folder) => (
-                    <SelectItem key={folder.id} value={folder.id}>
-                      {folder.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          <input
+            type='text'
+            id='folder'
+            name='folder'
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+          />
         </div>
 
         {/* Upload Button */}
         <Button
           type='submit'
-          disabled={isUploading || files.length === 0 || !selectedFolder}
+          disabled={isUploading || files.length === 0 || !folderName}
           className='w-full py-3'
         >
           {isUploading ? (
