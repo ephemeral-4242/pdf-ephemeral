@@ -41,6 +41,10 @@ interface UploadModalProps {
   onUploadSuccess: (url: string) => void;
 }
 
+interface EmptyStateProps {
+  onUploadPDF: () => void;
+}
+
 // Subcomponents
 const PDFComponents = {
   Header: ({ onNewFolder, onUploadPDF, onUploadFolder }: HeaderProps) => (
@@ -72,18 +76,19 @@ const PDFComponents = {
     </div>
   ),
 
-  EmptyState: () => (
+  EmptyState: ({ onUploadPDF }: EmptyStateProps) => (
     <div className='flex flex-col items-center justify-center py-16 bg-gray-800 rounded-lg'>
       <UploadCloud className='h-16 w-16 text-gray-400' />
       <p className='mt-4 text-xl font-medium text-gray-300'>
         No PDFs uploaded yet
       </p>
       <p className='mt-2 text-gray-400'>Get started by uploading a PDF.</p>
-      <Link href='/' passHref>
-        <button className='mt-6 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md'>
-          Upload a PDF
-        </button>
-      </Link>
+      <button
+        className='mt-6 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md'
+        onClick={onUploadPDF}
+      >
+        Upload a PDF
+      </button>
     </div>
   ),
 
@@ -213,7 +218,7 @@ export default function PDFsPage() {
       />
 
       {Object.keys(groupedPdfs).length === 0 ? (
-        <PDFComponents.EmptyState />
+        <PDFComponents.EmptyState onUploadPDF={() => toggleModal('upload')} />
       ) : (
         <div className='space-y-1'>
           {Object.entries(groupedPdfs).map(([folderName, pdfs]) => (
