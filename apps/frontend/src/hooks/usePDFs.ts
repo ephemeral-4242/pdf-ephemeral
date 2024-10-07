@@ -33,7 +33,7 @@ export const usePDFs = () => {
 
   const groupedPdfs = pdfs.reduce(
     (acc, pdf) => {
-      const folderName = pdf.folder?.name || 'Root';
+      const folderName = pdf.folder?.name || '';
       acc[folderName] = [...(acc[folderName] || []), pdf];
       return acc;
     },
