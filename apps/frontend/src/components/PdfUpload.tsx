@@ -39,10 +39,11 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !selectedFolder) return;
+    if (!file) return;
 
     await uploadPdf(file, onUploadSuccess, selectedFolder);
     setFile(null);
+    setSelectedFolder(null);
   };
 
   useEffect(() => {
@@ -99,40 +100,36 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onUploadSuccess }) => {
           )}
         </div>
 
-        {/* Folder Selection */}
-        <div>
-          <label
-            htmlFor='folder'
-            className='block text-sm font-medium text-gray-200 mb-3'
-          >
-            Select Folder
-          </label>
-          <div className='flex space-x-3'>
-            <Select onValueChange={(value) => setSelectedFolder(value)}>
-              <SelectTrigger id='folder' name='folder' className='w-full'>
-                <SelectValue placeholder='Choose a folder' />
-              </SelectTrigger>
-              <SelectContent>
-                {folders.length === 0 ? (
-                  <SelectItem value='none' disabled>
-                    No folders available
-                  </SelectItem>
-                ) : (
-                  folders.map((folder) => (
+        {/* Folder Selection - only show if there are folders */}
+        {folders.length > 0 && (
+          <div>
+            <label
+              htmlFor='folder'
+              className='block text-sm font-medium text-gray-200 mb-3'
+            >
+              Select Folder (Optional)
+            </label>
+            <div className='flex space-x-3'>
+              <Select onValueChange={(value) => setSelectedFolder(value)}>
+                <SelectTrigger id='folder' name='folder' className='w-full'>
+                  <SelectValue placeholder='Choose a folder' />
+                </SelectTrigger>
+                <SelectContent>
+                  {folders.map((folder) => (
                     <SelectItem key={folder.id} value={folder.id}>
                       {folder.name}
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Upload Button */}
         <Button
           type='submit'
-          disabled={isUploading || !file || !selectedFolder}
+          disabled={isUploading || !file}
           className='w-full py-3'
         >
           {isUploading ? (

@@ -13,12 +13,14 @@ export const usePdfUpload = () => {
   const uploadPdf = async (
     file: File,
     onSuccess: (url: string) => void,
-    folderId: string
+    folderId: string | null
   ) => {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('folderId', folderId);
+    if (folderId !== null) {
+      formData.append('folderId', folderId);
+    }
 
     try {
       const result = await api.pdf.upload(formData);

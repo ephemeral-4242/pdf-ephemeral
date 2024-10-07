@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   FileText,
   Folder as FolderIcon,
@@ -34,11 +33,6 @@ interface FolderItemProps {
 
 interface PDFItemProps {
   pdf: PDF;
-}
-
-interface UploadModalProps {
-  onClose: () => void;
-  onUploadSuccess: (url: string) => void;
 }
 
 interface EmptyStateProps {
@@ -110,7 +104,7 @@ const PDFComponents = {
           </h2>
         </div>
         <span className='text-xs text-gray-400'>
-          {pdfs.length} {pdfs.length > 1 ? 'files' : 'file'}
+          {pdfs.length} {pdfs.length === 1 ? 'file' : 'files'}
         </span>
       </div>
       {isExpanded && (
@@ -146,34 +140,17 @@ const PDFComponents = {
       </div>
     </div>
   ),
-
-  UploadModal: ({ onClose, onUploadSuccess }: UploadModalProps) => (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
-      <div className='bg-gray-800 p-6 rounded-lg shadow-lg relative'>
-        <button
-          className='absolute top-2 right-2 text-gray-500 hover:text-gray-700'
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        <PdfUpload onUploadSuccess={onUploadSuccess} />
-      </div>
-    </div>
-  ),
 };
 
 // Main component
 export default function PDFsPage() {
-  // Hooks and state
   const { isLoading, groupedPdfs, refetchPdfs } = usePDFs();
   const { showCreateFolderModal, showUploadModal, toggleModal } = useModals();
   const [showFolderUploadModal, setShowFolderUploadModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set()
   );
-  const router = useRouter();
 
-  // Helper functions
   const toggleFolder = (folderName: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
@@ -186,11 +163,10 @@ export default function PDFsPage() {
     });
   };
 
-  const handleUploadSuccess = (url: string) => {
+  const handleUploadSuccess = async (url: string) => {
     console.log('Upload successful:', url);
     toggleModal('upload');
-    const id = url.split('/').pop();
-    router.push(`/chat/${id}`);
+    await refetchPdfs();
   };
 
   const handleFolderUploadSuccess = async (urls: string[]) => {
@@ -199,7 +175,6 @@ export default function PDFsPage() {
     await refetchPdfs();
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className='flex justify-center items-center h-screen bg-gray-900'>
@@ -208,7 +183,6 @@ export default function PDFsPage() {
     );
   }
 
-  // Main render
   return (
     <div className='container mx-auto py-8 px-4 bg-gray-900 text-gray-100'>
       <PDFComponents.Header
@@ -220,16 +194,26 @@ export default function PDFsPage() {
       {Object.keys(groupedPdfs).length === 0 ? (
         <PDFComponents.EmptyState onUploadPDF={() => toggleModal('upload')} />
       ) : (
-        <div className='space-y-1'>
-          {Object.entries(groupedPdfs).map(([folderName, pdfs]) => (
-            <PDFComponents.FolderItem
-              key={folderName}
-              folderName={folderName}
-              pdfs={pdfs}
-              isExpanded={expandedFolders.has(folderName)}
-              onToggle={() => toggleFolder(folderName)}
-            />
-          ))}
+        <div className='space-y-4'>
+          {/* Render root-level PDFs */}
+          {groupedPdfs[''] &&
+            groupedPdfs[''].map((pdf) => (
+              <PDFComponents.PDFItem key={pdf.id} pdf={pdf} />
+            ))}
+
+          {/* Render folders and their PDFs */}
+          {Object.entries(groupedPdfs).map(
+            ([folderName, pdfs]) =>
+              folderName !== '' && (
+                <PDFComponents.FolderItem
+                  key={folderName}
+                  folderName={folderName}
+                  pdfs={pdfs}
+                  isExpanded={expandedFolders.has(folderName)}
+                  onToggle={() => toggleFolder(folderName)}
+                />
+              )
+          )}
         </div>
       )}
 
@@ -241,10 +225,17 @@ export default function PDFsPage() {
       />
 
       {showUploadModal && (
-        <PDFComponents.UploadModal
-          onClose={() => toggleModal('upload')}
-          onUploadSuccess={handleUploadSuccess}
-        />
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
+          <div className='bg-gray-800 p-6 rounded-lg shadow-lg relative'>
+            <button
+              className='absolute top-2 right-2 text-gray-500 hover:text-gray-700'
+              onClick={() => toggleModal('upload')}
+            >
+              &times;
+            </button>
+            <PdfUpload onUploadSuccess={handleUploadSuccess} />
+          </div>
+        </div>
       )}
 
       {showFolderUploadModal && (
