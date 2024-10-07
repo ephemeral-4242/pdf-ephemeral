@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { usePdfUpload } from '@/hooks/usePdfUpload';
 
 interface FolderUploadModalProps {
@@ -20,24 +20,32 @@ const FolderUploadModal: React.FC<FolderUploadModalProps> = ({
   const { uploadFolder, isUploading } = usePdfUpload();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFolderUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFolderSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    setError(null);
-    setSuccessMessage(null);
-
-    if (!files || files.length === 0) {
-      setError('No files selected');
-      return;
-    }
+    if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
     const folderName = fileArray[0].webkitRelativePath.split('/')[0];
+    setSelectedFolder(folderName);
+    setSelectedFiles(fileArray);
+    setError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFolder || selectedFiles.length === 0) {
+      setError('No folder selected');
+      return;
+    }
 
     // Basic validation: check if all files are PDFs
-    const nonPdfFiles = fileArray.filter((file) => !file.type.includes('pdf'));
+    const nonPdfFiles = selectedFiles.filter(
+      (file) => !file.type.includes('pdf')
+    );
     if (nonPdfFiles.length > 0) {
       setError(
         `${nonPdfFiles.length} non-PDF files found. Please select only PDF files.`
@@ -46,7 +54,7 @@ const FolderUploadModal: React.FC<FolderUploadModalProps> = ({
     }
 
     try {
-      const result = await uploadFolder(fileArray, folderName);
+      const result = await uploadFolder(selectedFiles, selectedFolder);
       if (result.urls && result.urls.length > 0) {
         setSuccessMessage(`Successfully uploaded ${result.urls.length} PDF(s)`);
         onUploadSuccess(result.urls);
@@ -102,19 +110,29 @@ const FolderUploadModal: React.FC<FolderUploadModalProps> = ({
               />
             </svg>
             <span className='mt-2 text-base leading-normal'>
-              Select a folder
+              {selectedFolder ? selectedFolder : 'Select a folder'}
             </span>
             <input
+              ref={fileInputRef}
               id='folder-upload'
               type='file'
               webkitdirectory=''
               directory=''
               multiple
-              onChange={handleFolderUpload}
+              onChange={handleFolderSelect}
               className='hidden'
             />
           </label>
         </div>
+        {selectedFolder && (
+          <button
+            onClick={handleUpload}
+            className='w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200'
+            disabled={isUploading}
+          >
+            Upload Folder
+          </button>
+        )}
         {isUploading && (
           <div className='mb-4 text-center'>
             <div className='inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500'></div>
