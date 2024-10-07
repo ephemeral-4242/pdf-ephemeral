@@ -36,7 +36,7 @@ import { HuggingFaceService } from './modules/services/huggingface.service';
     ChunkStreamingService,
     {
       provide: AI_SERVICE,
-      useClass: HuggingFaceService,
+      useClass: OpenAIService,
     },
 
     {
