@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
-import { Home, FileText, MessageSquare } from 'lucide-react';
+import { Home, FileText, MessageSquare, Lock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -24,8 +24,8 @@ export default function RootLayout({
               href='/'
               className='text-xl font-semibold flex items-center space-x-2'
             >
-              <Home className='h-6 w-6' />
-              <span>My App</span>
+              <Lock className='h-6 w-6' />
+              <span>Smart Vault</span>
             </Link>
           </div>
           <div className='mt-8 space-y-2'>
