@@ -17,6 +17,7 @@ import PdfUpload from '../../components/PdfUpload';
 import { Folder } from '@/components/PdfUpload';
 import { useModals } from '@/hooks/useModals';
 import { PDF, usePDFs } from '@/hooks/usePDFs';
+import EnhancedUpload from '@/components/EnhancedUpload';
 
 interface HeaderProps {
   onNewFolder: () => void;
@@ -36,7 +37,7 @@ interface PDFItemProps {
 
 interface UploadModalProps {
   onClose: () => void;
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (urls: string[]) => void;
 }
 
 const PDFComponents = {
@@ -141,7 +142,7 @@ const PDFComponents = {
         >
           &times;
         </button>
-        <PdfUpload onUploadSuccess={onUploadSuccess} />
+        <EnhancedUpload onUploadSuccess={onUploadSuccess} />
       </div>
     </div>
   ),
@@ -168,11 +169,15 @@ export default function PDFsPage() {
     });
   };
 
-  const handleUploadSuccess = (url: string) => {
-    console.log('Upload successful:', url);
+  const handleUploadSuccess = (urls: string[]) => {
+    console.log('Upload successful:', urls);
     toggleModal('upload');
-    const id = url.split('/').pop();
-    router.push(`/chat/${id}`);
+    if (urls.length > 0) {
+      const id = urls[0].split('/').pop();
+      router.push(`/chat/${id}`);
+    }
+    // Optionally, you might want to refresh your PDF list here
+    // For example: refetchPDFs();
   };
 
   if (isLoading) {

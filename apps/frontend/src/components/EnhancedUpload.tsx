@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { FiUploadCloud } from 'react-icons/fi';
 
 import { FileTree, FileTreeNode } from './FileTree';
 import { useEnhancedUpload } from '@/hooks/useEnhancedUpload';
@@ -57,40 +58,63 @@ const EnhancedUpload: React.FC<EnhancedUploadProps> = ({ onUploadSuccess }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: true,
-    noClick: true,
-    noKeyboard: true,
   });
 
   const handleUpload = async () => {
     if (fileTree.length > 0) {
       const urls = await uploadFiles(fileTree);
       onUploadSuccess(urls);
-      setFileTree([]); // Clear the file tree after successful upload
+      setFileTree([]);
     }
   };
 
   return (
     <div>
-      <div {...getRootProps()} className='dropzone'>
-        <input
-          {...getInputProps()}
-          {...({
-            directory: '',
-            webkitdirectory: '',
-          } as React.InputHTMLAttributes<HTMLInputElement>)}
-        />
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+          isDragActive
+            ? 'border-blue-500 bg-gray-800'
+            : 'border-gray-700 hover:border-blue-400'
+        }`}
+      >
+        <input {...getInputProps()} />
+        <FiUploadCloud className='mx-auto text-5xl text-gray-400 mb-4' />
         {isDragActive ? (
-          <p>Drop the files or folders here ...</p>
+          <p className='text-lg text-blue-500 font-medium'>
+            Drop files here...
+          </p>
         ) : (
-          <p>Drag 'n' drop files or folders here, or click to select</p>
+          <div>
+            <p className='text-lg text-gray-200 font-medium mb-2'>
+              Drag & drop files or folders here
+            </p>
+            <p className='text-sm text-gray-400'>Or click to select files</p>
+          </div>
         )}
       </div>
+
       {fileTree.length > 0 && (
-        <div>
-          <FileTree nodes={fileTree} />
-          <button onClick={handleUpload} disabled={isUploading}>
-            {isUploading ? 'Uploading...' : 'Upload Files and Folders'}
-          </button>
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold mb-2 text-gray-200'>
+            Selected Files:
+          </h3>
+          <div className='bg-gray-800 rounded-lg p-4 max-h-60 overflow-y-auto'>
+            <FileTree nodes={fileTree} />
+          </div>
+          <div className='mt-4'>
+            <button
+              onClick={handleUpload}
+              disabled={isUploading}
+              className={`w-full py-2 px-4 rounded-md text-white font-medium ${
+                isUploading
+                  ? 'bg-blue-600 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              }`}
+            >
+              {isUploading ? 'Uploading...' : 'Upload Files and Folders'}
+            </button>
+          </div>
         </div>
       )}
     </div>
