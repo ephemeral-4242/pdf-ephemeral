@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { api } from '../api/routes';
 import toast from 'react-hot-toast';
 
+interface UploadFolderResult {
+  urls?: string[];
+  errors?: string[];
+}
+
 export const usePdfUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -32,5 +37,25 @@ export const usePdfUpload = () => {
     }
   };
 
-  return { uploadPdf, isUploading };
+  const uploadFolder = async (
+    files: File[],
+    folderName: string
+  ): Promise<UploadFolderResult> => {
+    setIsUploading(true);
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    formData.append('folderName', folderName);
+
+    try {
+      const result = await api.pdf.uploadFolder(formData);
+      return result;
+    } catch (error) {
+      console.error('Error uploading folder:', error);
+      return { errors: ['Error uploading folder'] };
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return { uploadPdf, uploadFolder, isUploading };
 };

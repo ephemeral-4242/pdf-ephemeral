@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/routes';
 
 export interface PDF {
@@ -15,20 +15,21 @@ export const usePDFs = () => {
   const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPdfs = async () => {
-      try {
-        const fetchedPdfs = await api.pdf.getAll();
-        setPdfs(fetchedPdfs);
-      } catch (error) {
-        console.error('Error fetching PDFs:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPdfs();
+  const fetchPdfs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const fetchedPdfs = await api.pdf.getAll();
+      setPdfs(fetchedPdfs);
+    } catch (error) {
+      console.error('Error fetching PDFs:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchPdfs();
+  }, [fetchPdfs]);
 
   const groupedPdfs = pdfs.reduce(
     (acc, pdf) => {
@@ -39,5 +40,5 @@ export const usePDFs = () => {
     {} as Record<string, PDF[]>
   );
 
-  return { pdfs, setPdfs, isLoading, groupedPdfs };
+  return { pdfs, setPdfs, isLoading, groupedPdfs, refetchPdfs: fetchPdfs };
 };

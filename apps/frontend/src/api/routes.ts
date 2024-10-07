@@ -44,5 +44,19 @@ export const api = {
         },
         body: JSON.stringify({ name }),
       }),
+    uploadFolder: async (formData: FormData) => {
+      console.log('Uploading folder with formData:', formData);
+      try {
+        const result = await fetchApi('/pdf/upload-folder', {
+          method: 'POST',
+          body: formData,
+        });
+        console.log('Upload folder result:', result);
+        return result;
+      } catch (error) {
+        console.error('Error uploading folder:', error);
+        throw error;
+      }
+    },
   },
 };
