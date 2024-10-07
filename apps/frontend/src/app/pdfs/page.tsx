@@ -17,7 +17,6 @@ import PdfUpload from '../../components/PdfUpload';
 import { Folder } from '@/components/PdfUpload';
 import { useModals } from '@/hooks/useModals';
 import { PDF, usePDFs } from '@/hooks/usePDFs';
-
 import { usePdfUpload } from '@/hooks/usePdfUpload';
 
 interface FolderUploadModalProps {
@@ -103,7 +102,7 @@ const FolderUploadModal: React.FC<FolderUploadModalProps> = ({
 interface HeaderProps {
   onNewFolder: () => void;
   onUploadPDF: () => void;
-  onUploadFolder: () => void; // New prop for folder upload
+  onUploadFolder: () => void;
 }
 
 interface FolderItemProps {
@@ -238,13 +237,12 @@ const PDFComponents = {
 };
 
 export default function PDFsPage() {
-  const { pdfs, setPdfs, isLoading, groupedPdfs } = usePDFs();
+  const { isLoading, groupedPdfs, refetchPdfs } = usePDFs();
   const { showCreateFolderModal, showUploadModal, toggleModal } = useModals();
   const [showFolderUploadModal, setShowFolderUploadModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set()
   );
-  const [folders, setFolders] = useState<Folder[]>([]);
   const router = useRouter();
 
   const toggleFolder = (folderName: string) => {
@@ -266,19 +264,10 @@ export default function PDFsPage() {
     router.push(`/chat/${id}`);
   };
 
-  const handleFolderUploadSuccess = (urls: string[]) => {
+  const handleFolderUploadSuccess = async (urls: string[]) => {
     console.log('Folder upload successful:', urls);
     setShowFolderUploadModal(false);
-    // Refresh the PDF list
-    setPdfs((prevPdfs) => [
-      ...prevPdfs,
-      ...urls.map((url) => ({
-        id: url.split('/').pop() || '',
-        fileName: url.split('/').pop() || '',
-        uploadDate: new Date().toISOString(),
-        url: url,
-      })),
-    ]);
+    await refetchPdfs();
   };
 
   if (isLoading) {
@@ -316,9 +305,7 @@ export default function PDFsPage() {
       <CreateFolderModal
         show={showCreateFolderModal}
         onClose={() => toggleModal('folder')}
-        onCreate={(newFolder: Folder) =>
-          setFolders((prevFolders) => [...prevFolders, newFolder])
-        }
+        onCreate={() => refetchPdfs()}
       />
 
       {showUploadModal && (
