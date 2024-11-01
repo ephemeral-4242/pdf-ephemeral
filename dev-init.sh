@@ -19,10 +19,10 @@ fi
 echo "Installing dependencies..."
 bun install
 
-# Generate Prisma client and run migrations
+# Create database and run migrations
 echo "Setting up database..."
 bunx prisma generate
-bunx prisma migrate dev
+node -r esbuild-register scripts/create-database.ts
 
 # Launch Qdrant using Docker
 echo "Launching Qdrant..."
