@@ -5,8 +5,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev:backend": "yarn workspace backend start:dev",
-    "dev:frontend": "yarn workspace frontend dev",
-    "dev": "yarn dev:backend & yarn dev:frontend"
+    "dev:backend": "bun --bun run workspace backend start:dev",
+    "dev:frontend": "bun --bun run workspace frontend dev",
+    "dev": "bun --bun run dev:backend & bun --bun run dev:frontend"
   }
 }

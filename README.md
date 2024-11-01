@@ -29,10 +29,10 @@ Navigate to the backend and frontend directories and install dependencies:
 
 ```bash
 cd apps/backend
-yarn install
+bun install
 
 cd ../frontend
-yarn install
+bun install
 ```
 
 ### 3. Set Up Environment Variables
@@ -77,7 +77,7 @@ This script will:
 To start both the backend and frontend development servers, run:
 
 ```bash
-yarn dev
+bun dev
 ```
 
 IN BOTH RESPECTIVELY
@@ -121,7 +121,7 @@ The backend uses the following environment variables:
 To run the backend tests, use:
 
 ```bash
-yarn test
+bun test
 ```
 
 ## Frontend
